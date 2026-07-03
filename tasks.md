@@ -66,10 +66,10 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done
 
 ## Phase 4.5 — Search (FTS5)
 
-- [ ] `migrate.ts` — create `tasks_fts` / `notes_fts` FTS5 external-content tables + sync triggers (raw DDL, `user_version`-guarded)
-- [ ] `searchRepo` — bm25-ranked query across tasks + notes, returning `SearchResult[]` with `snippet()`
-- [ ] `search` IPC channel + `store` wiring
-- [ ] Global search UI (top-bar input or command palette) → grouped task/note results → jump to item
+- [x] `migrate.ts` — create `tasks_fts` / `notes_fts` FTS5 external-content tables + sync triggers (raw DDL, `user_version`-guarded)
+- [x] `searchRepo` — bm25-ranked query across tasks + notes, returning `SearchResult[]` with `snippet()`
+- [x] `search` IPC channel + `store` wiring
+- [x] Global search UI (top-bar input or command palette) → grouped task/note results → jump to item
 
 ## Phase 5 — Polish & package
 

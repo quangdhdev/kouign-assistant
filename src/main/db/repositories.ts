@@ -13,7 +13,7 @@
  */
 
 import type Database from 'better-sqlite3-multiple-ciphers'
-import type { Task, Note, TaskStatus, TaskPriority, TaskCategory, NoteType, CreateTaskInput, UpdateTaskInput, TaskFilter, CreateNoteInput, UpdateNoteInput, NoteFilter } from '@shared/types'
+import type { Task, Note, TaskStatus, TaskPriority, TaskCategory, NoteType, CreateTaskInput, UpdateTaskInput, TaskFilter, CreateNoteInput, UpdateNoteInput, NoteFilter, SearchResult } from '@shared/types'
 
 // ---------------------------------------------------------------------------
 // Raw DB row shapes (snake_case, matching SQLite columns exactly)
@@ -288,6 +288,104 @@ export function noteRepo(db: Database.Database) {
       return mapNote(
         db.prepare('SELECT * FROM notes WHERE id = ?').get(id) as RawNoteRow
       )
+    },
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Search repository (FTS5)
+// ---------------------------------------------------------------------------
+
+/** Raw row returned by a tasks_fts join query. */
+interface RawTaskSearchRow extends RawTaskRow {
+  snippet: string
+  rank: number
+}
+
+/** Raw row returned by a notes_fts join query. */
+interface RawNoteSearchRow extends RawNoteRow {
+  snippet: string
+  rank: number
+}
+
+/**
+ * Builds a safe FTS5 MATCH expression from user input.
+ *
+ * Each whitespace-separated token is double-quoted (escaping any embedded
+ * double-quotes) and suffixed with * for prefix matching.  Multiple tokens
+ * are space-joined (FTS5 treats them as implicit AND).
+ *
+ * Example: 'hello "world"' → '"hello"* """world"""*'
+ */
+function buildMatchExpr(q: string): string {
+  return q
+    .trim()
+    .split(/\s+/)
+    .filter(t => t.length > 0)
+    .map(t => `"${t.replace(/"/g, '""')}"*`)
+    .join(' ')
+}
+
+const MAX_RESULTS = 50
+const SNIPPET_TOKENS = 16
+
+export function searchRepo(db: Database.Database) {
+  return {
+    /**
+     * Full-text search across tasks and notes.
+     * Returns merged, bm25-ranked SearchResult[] (lower rank = better match).
+     * Empty or whitespace-only query returns [].
+     */
+    query(q: string): SearchResult[] {
+      if (!q.trim()) return []
+
+      const matchExpr = buildMatchExpr(q)
+
+      // --- tasks ---
+      const taskRows = db.prepare(`
+        SELECT
+          t.id, t.title, t.description, t.status, t.priority, t.category,
+          t.due_date, t.jira_url, t.slack_url, t.created_at, t.updated_at, t.completed_at,
+          snippet(tasks_fts, -1, '<mark>', '</mark>', '…', ${SNIPPET_TOKENS}) AS snippet,
+          bm25(tasks_fts) AS rank
+        FROM tasks_fts
+        JOIN tasks t ON t.id = tasks_fts.rowid
+        WHERE tasks_fts MATCH ?
+        ORDER BY rank
+        LIMIT ${MAX_RESULTS}
+      `).all(matchExpr) as RawTaskSearchRow[]
+
+      // --- notes ---
+      const noteRows = db.prepare(`
+        SELECT
+          n.id, n.title, n.content, n.type, n.url, n.pinned, n.created_at, n.updated_at,
+          snippet(notes_fts, -1, '<mark>', '</mark>', '…', ${SNIPPET_TOKENS}) AS snippet,
+          bm25(notes_fts) AS rank
+        FROM notes_fts
+        JOIN notes n ON n.id = notes_fts.rowid
+        WHERE notes_fts MATCH ?
+        ORDER BY rank
+        LIMIT ${MAX_RESULTS}
+      `).all(matchExpr) as RawNoteSearchRow[]
+
+      // Merge, sort by bm25 rank ascending (lower = better), cap total.
+      const taskResults: SearchResult[] = taskRows.map(row => ({
+        kind: 'task' as const,
+        task: mapTask(row),
+        snippet: row.snippet,
+        rank: row.rank,
+      }))
+
+      const noteResults: SearchResult[] = noteRows.map(row => ({
+        kind: 'note' as const,
+        note: mapNote(row),
+        snippet: row.snippet,
+        rank: row.rank,
+      }))
+
+      return [...taskResults, ...noteResults]
+        .sort((a, b) => a.rank - b.rank)
+        .slice(0, MAX_RESULTS)
     },
   }
 }

@@ -269,7 +269,7 @@ function TaskRow({ task, onEdit, onDelete, confirmDelete }: TaskRowProps): React
 
 export default function TodosPage(): React.ReactElement {
   const { toast } = useToast()
-  const { tasks, filter, loading, load, setFilter, remove } = useTasksStore()
+  const { tasks, filter, loading, load, setFilter, remove, openEditId, setOpenEditId } = useTasksStore()
 
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editingTask, setEditingTask] = useState<Task | null>(null)
@@ -279,6 +279,19 @@ export default function TodosPage(): React.ReactElement {
   useEffect(() => {
     load().catch(e => toast(e instanceof Error ? e.message : 'Failed to load tasks', 'error'))
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Open edit dialog when the search palette navigates here with a target task id.
+  // Re-runs whenever openEditId or tasks changes (tasks may still be loading when
+  // openEditId is first set — we wait until the task appears in the list).
+  useEffect(() => {
+    if (openEditId === null) return
+    const target = tasks.find(t => t.id === openEditId)
+    if (target) {
+      setEditingTask(target)
+      setDialogOpen(true)
+      setOpenEditId(null) // consume
+    }
+  }, [openEditId, tasks]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // -- Category filter --
   const activeCategory = filter.category ?? null

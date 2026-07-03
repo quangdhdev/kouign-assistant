@@ -40,6 +40,13 @@ interface TasksStore {
   filter: TaskFilter
   loading: boolean
 
+  /**
+   * When set to a task id, TodosPage opens the edit dialog for that task.
+   * Consumed (set back to null) by TodosPage after the dialog opens.
+   * Used by the search palette to jump to a specific task.
+   */
+  openEditId: number | null
+
   /** Load (or reload) tasks from the main process, applying the current filter. */
   load(): Promise<void>
 
@@ -57,6 +64,12 @@ interface TasksStore {
 
   /** Delete a task by ID. */
   remove(id: number, toast: (msg: string, kind?: 'error' | 'success' | 'info') => void): Promise<void>
+
+  /**
+   * Signal TodosPage to open the edit dialog for the given task id.
+   * Call before navigating to /todos; the page consumes and resets this to null.
+   */
+  setOpenEditId(id: number | null): void
 }
 
 // ---------------------------------------------------------------------------
@@ -67,6 +80,7 @@ export const useTasksStore = create<TasksStore>((set, get) => ({
   tasks: [],
   filter: {},
   loading: false,
+  openEditId: null,
 
   async load() {
     set({ loading: true })
@@ -126,5 +140,9 @@ export const useTasksStore = create<TasksStore>((set, get) => ({
     } catch (e) {
       toast(e instanceof Error ? e.message : 'Failed to delete task', 'error')
     }
+  },
+
+  setOpenEditId(id) {
+    set({ openEditId: id })
   },
 }))
