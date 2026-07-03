@@ -1,4 +1,4 @@
-# tasks.md — Bassistant build backlog
+# tasks.md — Kouign Assistant build backlog
 
 A living checklist for building the MVP. Phases are ordered; check items off as they land.
 See [ARCHITECTURE.md](./ARCHITECTURE.md) and [DESIGN_SYSTEM.md](./DESIGN_SYSTEM.md) for the
@@ -10,13 +10,13 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done
 
 ## Phase 0 — Project scaffold
 
-- [ ] Scaffold Electron + electron-vite + React + TypeScript project
-- [ ] Configure `electron.vite.config.ts` (main / preload / renderer, path aliases `@`, `@shared`)
-- [ ] Add tsconfig split (`tsconfig.node.json`, `tsconfig.web.json`)
-- [ ] Add Tailwind CSS v4 + `@tailwindcss/vite`
-- [ ] Init shadcn/ui (`components.json`, `new-york` style) and add base primitives
-- [ ] ESLint + Prettier
-- [ ] `.gitignore` (ignore `*.bassistantdb`, `*.db`, `out/`, `dist/`, `node_modules/`)
+- [x] Scaffold Electron + electron-vite + React + TypeScript project
+- [x] Configure `electron.vite.config.ts` (main / preload / renderer, path aliases `@`, `@shared`)
+- [x] Add tsconfig split (`tsconfig.node.json`, `tsconfig.web.json`)
+- [x] Add Tailwind CSS v4 + `@tailwindcss/vite`
+- [x] Init shadcn/ui (`components.json`, `new-york` style) and add base primitives
+- [x] ESLint + Prettier
+- [x] `.gitignore` (ignore `*.kouigndb`, `*.db`, `out/`, `dist/`, `node_modules/`)
 
 ## Phase 1 — Encrypted datasource core
 
@@ -25,7 +25,7 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done
 - [ ] `db/schema.ts` — Drizzle schema for `tasks` and `notes`
 - [ ] `db/migrate.ts` — idempotent DDL + `PRAGMA user_version`
 - [ ] `db/repositories.ts` — `taskRepo` / `noteRepo` mapping rows → shared types
-- [ ] `datasource/config.ts` — recent datasources (plaintext `userData/bassistant.config.json`)
+- [ ] `datasource/config.ts` — recent datasources (plaintext `userData/kouign.config.json`)
 - [ ] `datasource/icloud.ts` — resolve iCloud Drive dir; detect `.icloud` placeholders
 - [ ] Rebuild native module for Electron (`electron-builder install-app-deps`)
 - [ ] Wrong-password path returns a friendly error
