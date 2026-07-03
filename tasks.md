@@ -32,19 +32,19 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done
 
 ## Phase 2 — App shell & unlock UI
 
-- [ ] `shared/types.ts`, `shared/ipc.ts`, `shared/api.ts` (single source of truth)
-- [ ] Main IPC handlers: `datasource` (list/create/pick/unlock/lock/remove/session)
-- [ ] `ipc/result.ts` — `handle()` wrapper → `IpcResult<T>` + error-code → message map
-- [ ] Preload `contextBridge` exposing typed `window.api`
-- [ ] Renderer: `main.tsx` (HashRouter + ToastProvider), `App.tsx` session gate
-- [ ] `LockGate` — recent list, open existing, create new
-- [ ] **Password policy** on create: min 8 chars + confirm-match + non-dismissible "no recovery" warning; re-validated in `datasource:create` handler
-- [ ] `AppShell` — draggable top bar, sidebar nav, nested routes
-- [ ] `store/session.ts` (Zustand) — refresh / unlock / create / lock
-- [ ] `settings` IPC + `datasource/config.ts` `AppSettings` (autoLockMinutes default 15, theme); `store/settings.ts`
-- [ ] **Auto-lock on inactivity** — renderer activity ping → main idle timer → close handle + push session update; `0`/"Never" disables
-- [ ] `SettingsPage` — show datasource, lock & switch, **auto-lock timeout control**, security note
-- [ ] Design tokens in `styles/globals.css` (light + dark)
+- [x] `shared/types.ts`, `shared/ipc.ts`, `shared/api.ts` (single source of truth)
+- [x] Main IPC handlers: `datasource` (list/create/pick/unlock/lock/remove/session)
+- [x] `ipc/result.ts` — `handle()` wrapper → `IpcResult<T>` + error-code → message map
+- [x] Preload `contextBridge` exposing typed `window.api`
+- [x] Renderer: `main.tsx` (HashRouter + ToastProvider), `App.tsx` session gate
+- [x] `LockGate` — recent list, open existing, create new
+- [x] **Password policy** on create: min 8 chars + confirm-match + non-dismissible "no recovery" warning; re-validated in `datasource:create` handler
+- [x] `AppShell` — draggable top bar, sidebar nav, nested routes
+- [x] `store/session.ts` (Zustand) — refresh / unlock / create / lock
+- [x] `settings` IPC + `datasource/config.ts` `AppSettings` (autoLockMinutes default 15, theme); `store/settings.ts`
+- [x] **Auto-lock on inactivity** — renderer activity ping → main idle timer → close handle + push session update; `0`/"Never" disables
+- [x] `SettingsPage` — show datasource, lock & switch, **auto-lock timeout control**, security note
+- [x] Design tokens in `styles/globals.css` (light + dark)
 
 ## Phase 3 — Todos feature
 

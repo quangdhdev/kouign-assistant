@@ -1,21 +1,54 @@
-import React from 'react'
-import '@/styles/globals.css'
-import { Button } from '@/components/ui/button'
-// Prove @shared alias resolves in the renderer
-import type { Placeholder as _Placeholder } from '@shared/types'
+import React, { useEffect, useRef } from 'react'
+import { Routes, Route, Navigate } from 'react-router-dom'
+import { useSessionStore } from '@/store/session'
+import LockGate from '@/routes/LockGate'
+import AppShell from '@/routes/AppShell'
 
-function App(): React.ReactElement {
+/** Throttle delay in ms for activity pings */
+const ACTIVITY_THROTTLE = 10_000
+
+export default function App(): React.ReactElement {
+  const { state, setSessionState, refresh } = useSessionStore()
+  const lastPing = useRef(0)
+
+  // Fetch initial session state
+  useEffect(() => {
+    refresh()
+  }, [refresh])
+
+  // Subscribe to session changes pushed from main process
+  useEffect(() => {
+    const unsub = window.api.onSessionChanged((s) => {
+      setSessionState(s)
+    })
+    return unsub
+  }, [setSessionState])
+
+  // Global activity listener — throttled, sends ping to main for auto-lock reset
+  useEffect(() => {
+    function handleActivity(): void {
+      const now = Date.now()
+      if (now - lastPing.current >= ACTIVITY_THROTTLE) {
+        lastPing.current = now
+        window.api.pingActivity()
+      }
+    }
+    window.addEventListener('mousemove', handleActivity)
+    window.addEventListener('keydown', handleActivity)
+    return () => {
+      window.removeEventListener('mousemove', handleActivity)
+      window.removeEventListener('keydown', handleActivity)
+    }
+  }, [])
+
+  if (!state.unlocked) {
+    return <LockGate />
+  }
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background text-foreground">
-      <div className="rounded-lg border border-border bg-card p-10 shadow-sm text-center space-y-4">
-        <h1 className="text-2xl font-semibold tracking-tight">Kouign Assistant</h1>
-        <p className="text-sm text-muted-foreground">
-          Your private, offline-first personal assistant.
-        </p>
-        <Button>Get Started</Button>
-      </div>
-    </div>
+    <Routes>
+      <Route path="/*" element={<AppShell />} />
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
   )
 }
-
-export default App

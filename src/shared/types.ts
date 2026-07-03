@@ -1,16 +1,16 @@
 // Shared domain types — single source of truth across main / preload / renderer.
 
 // ---------------------------------------------------------------------------
-// Utility types (Phase 0 + Phase 2+)
+// Utility types
 // ---------------------------------------------------------------------------
 
 /** Placeholder kept so @shared/types can be imported before Phase 1 types are used. */
 export type Placeholder = never
 
-/** Discriminated union returned by every IPC handler (Phase 2+). */
+/** Discriminated union returned by every IPC handler — handlers never throw across the boundary. */
 export type IpcResult<T> =
   | { ok: true; data: T }
-  | { ok: false; error: string }
+  | { ok: false; error: { code: string; message: string } }
 
 // ---------------------------------------------------------------------------
 // Domain enums (Phase 1)
@@ -95,3 +95,20 @@ export class DatasourceError extends Error {
     this.name = 'DatasourceError'
   }
 }
+
+// ---------------------------------------------------------------------------
+// Session state (Phase 2)
+// ---------------------------------------------------------------------------
+
+export interface SessionState {
+  unlocked: boolean
+  datasource: { path: string; label: string } | null
+}
+
+// ---------------------------------------------------------------------------
+// Search (Phase 2 declaration, Phase 4.5 implementation)
+// ---------------------------------------------------------------------------
+
+export type SearchResult =
+  | { kind: 'task'; task: Task; snippet: string; rank: number }
+  | { kind: 'note'; note: Note; snippet: string; rank: number }

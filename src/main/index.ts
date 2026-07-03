@@ -1,8 +1,8 @@
 import { app, BrowserWindow, shell } from 'electron'
 import { join } from 'path'
-
-// Import shared types to prove @shared alias resolves in main process
-import type { Placeholder as _Placeholder } from '@shared/types'
+import { registerDatasourceHandlers } from './ipc/datasource'
+import { registerSettingsHandlers } from './ipc/settings'
+import { registerShellHandlers } from './ipc/shell'
 
 function createWindow(): void {
   const mainWindow = new BrowserWindow({
@@ -19,13 +19,18 @@ function createWindow(): void {
     }
   })
 
-  // Security: deny all in-app navigation / new-window requests.
-  // OS-level link routing (http/https/slack) will be added in Phase 2 shell IPC.
-  mainWindow.webContents.setWindowOpenHandler(() => ({ action: 'deny' }))
-
-  // Gracefully show window once ready to paint (avoids white flash)
-  mainWindow.on('ready-to-show', () => {
-    mainWindow.show()
+  // Security: deny in-app new-window requests; route external links through allowlisted openExternal.
+  mainWindow.webContents.setWindowOpenHandler(({ url }) => {
+    const allowed = ['http:', 'https:', 'slack:']
+    try {
+      const protocol = new URL(url).protocol
+      if (allowed.includes(protocol)) {
+        shell.openExternal(url)
+      }
+    } catch {
+      // ignore malformed URLs
+    }
+    return { action: 'deny' }
   })
 
   // Prevent in-page navigation to external URLs
@@ -37,6 +42,11 @@ function createWindow(): void {
     }
   })
 
+  // Gracefully show window once ready to paint (avoids white flash)
+  mainWindow.on('ready-to-show', () => {
+    mainWindow.show()
+  })
+
   // Load the renderer
   if (!app.isPackaged && process.env['ELECTRON_RENDERER_URL']) {
     mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL'])
@@ -46,6 +56,11 @@ function createWindow(): void {
 }
 
 app.whenReady().then(() => {
+  // Register all IPC handlers before creating the window
+  registerDatasourceHandlers()
+  registerSettingsHandlers()
+  registerShellHandlers()
+
   createWindow()
 
   app.on('activate', () => {

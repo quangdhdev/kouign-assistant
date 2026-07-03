@@ -13,14 +13,14 @@
     "postinstall": "electron-builder install-app-deps"
   },
   "devDependencies": {
+    "@tailwindcss/vite": "^4.3.2",
     "@types/node": "^22.0.0",
-    "drizzle-kit": "^0.31.4",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "@typescript-eslint/eslint-plugin": "^8.0.0",
     "@typescript-eslint/parser": "^8.0.0",
     "@vitejs/plugin-react": "^5.2.0",
-    "@tailwindcss/vite": "^4.3.2",
+    "drizzle-kit": "^0.31.4",
     "electron": "^33.2.0",
     "electron-builder": "^26.0.0",
     "electron-vite": "^5.0.0",
@@ -33,15 +33,18 @@
     "vite": "^7.3.6"
   },
   "dependencies": {
-    "better-sqlite3-multiple-ciphers": "^11.8.1",
-    "drizzle-orm": "^0.44.2",
     "@radix-ui/react-slot": "^1.1.0",
+    "better-sqlite3-multiple-ciphers": "^11.8.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "drizzle-orm": "^0.44.2",
+    "lucide-react": "^1.23.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "react-router-dom": "^7.18.1",
     "tailwind-merge": "^2.5.4",
-    "tailwindcss": "^4.3.2"
+    "tailwindcss": "^4.3.2",
+    "zustand": "^5.0.14"
   },
   "build": {
     "appId": "com.kouign.app",

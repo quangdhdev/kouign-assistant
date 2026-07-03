@@ -1,88 +1,188 @@
 @import "tailwindcss";
 
-/*
-  shadcn/ui + Atlassian-flavored design tokens.
-  Full Atlassian token set will be completed in Phase 2.
-  This block is the shadcn/ui default placeholder so token utilities
-  (bg-background, text-foreground, etc.) resolve now.
-*/
+/* ---------------------------------------------------------------------------
+   Atlassian / Jira-flavored design tokens — light and dark.
+   Mapped to Tailwind utilities via @theme inline so bg-background,
+   text-foreground, border-border, etc. resolve to these values.
+   shadcn/ui primitives consume the same CSS variables.
+   --------------------------------------------------------------------------- */
+
 @layer base {
   :root {
-    /* shadcn/ui defaults — overridden with Atlassian palette in Phase 2 */
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
-    --radius: 0.5rem;
+    /* --- Surfaces --- */
+    --background:           #F4F5F7;   /* N20 — app canvas */
+    --foreground:           #172B4D;   /* N800 — primary text */
+    --card:                 #FFFFFF;   /* N0 — cards / panels */
+    --card-foreground:      #172B4D;
+    --popover:              #FFFFFF;
+    --popover-foreground:   #172B4D;
+
+    /* --- Brand / primary --- */
+    --primary:              #0052CC;   /* B400 — buttons, links, focus */
+    --primary-foreground:   #FFFFFF;
+
+    /* --- Secondary / chips --- */
+    --secondary:            #EBECF0;   /* N30 — subtle bg */
+    --secondary-foreground: #172B4D;
+
+    /* --- Muted --- */
+    --muted:                #EBECF0;   /* N30 */
+    --muted-foreground:     #6B778C;   /* N200 — secondary text */
+
+    /* --- Accent — active nav / selected --- */
+    --accent:               #DEEBFF;   /* B50 */
+    --accent-foreground:    #0747A6;   /* B500 */
+
+    /* --- Semantic --- */
+    --destructive:          #DE350B;   /* R400 */
+    --destructive-foreground: #FFFFFF;
+    --success:              #36B37E;   /* G400 */
+    --warning:              #FFAB00;   /* Y400 */
+
+    /* --- Borders & inputs --- */
+    --border:               #DFE1E6;   /* N40 */
+    --input:                #DFE1E6;
+    --ring:                 #4C9AFF;   /* B300 — focus ring */
+
+    /* --- Sidebar --- */
+    --sidebar:              #FFFFFF;
+    --sidebar-foreground:   #172B4D;
+    --sidebar-accent:       #DEEBFF;   /* B50 — active nav item bg */
+    --sidebar-accent-foreground: #0747A6;
+    --sidebar-border:       #DFE1E6;
+
+    /* --- Radius --- */
+    --radius:               3px;       /* Jira-like tight radius */
+    --radius-card:          8px;
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
+    /* Atlassian DN (dark neutral) scale */
+    --background:           #1D2125;   /* DN canvas */
+    --foreground:           #C7D1DB;   /* DN text */
+    --card:                 #22272B;   /* DN surface */
+    --card-foreground:      #C7D1DB;
+    --popover:              #22272B;
+    --popover-foreground:   #C7D1DB;
+
+    --primary:              #579DFF;   /* B300 dark */
+    --primary-foreground:   #1D2125;
+
+    --secondary:            #2C333A;
+    --secondary-foreground: #C7D1DB;
+
+    --muted:                #2C333A;
+    --muted-foreground:     #8C9BAB;
+
+    --accent:               #1C2B41;
+    --accent-foreground:    #579DFF;
+
+    --destructive:          #FF5630;
+    --destructive-foreground: #1D2125;
+    --success:              #57D9A3;
+    --warning:              #FFAB00;
+
+    --border:               #38414A;
+    --input:                #38414A;
+    --ring:                 #579DFF;
+
+    --sidebar:              #22272B;
+    --sidebar-foreground:   #C7D1DB;
+    --sidebar-accent:       #1C2B41;
+    --sidebar-accent-foreground: #579DFF;
+    --sidebar-border:       #38414A;
+
+    --radius:               3px;
+    --radius-card:          8px;
   }
 }
 
+/* ---------------------------------------------------------------------------
+   Map CSS vars → Tailwind color utilities via @theme inline
+   --------------------------------------------------------------------------- */
+@theme inline {
+  --color-background:           var(--background);
+  --color-foreground:           var(--foreground);
+  --color-card:                 var(--card);
+  --color-card-foreground:      var(--card-foreground);
+  --color-popover:              var(--popover);
+  --color-popover-foreground:   var(--popover-foreground);
+  --color-primary:              var(--primary);
+  --color-primary-foreground:   var(--primary-foreground);
+  --color-secondary:            var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted:                var(--muted);
+  --color-muted-foreground:     var(--muted-foreground);
+  --color-accent:               var(--accent);
+  --color-accent-foreground:    var(--accent-foreground);
+  --color-destructive:          var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-success:              var(--success);
+  --color-warning:              var(--warning);
+  --color-border:               var(--border);
+  --color-input:                var(--input);
+  --color-ring:                 var(--ring);
+  --color-sidebar:              var(--sidebar);
+  --color-sidebar-foreground:   var(--sidebar-foreground);
+  --color-sidebar-accent:       var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border:       var(--sidebar-border);
+
+  /* Status / priority badge palette */
+  --color-badge-success-bg:     #E3FCEF;
+  --color-badge-success-text:   #006644;
+  --color-badge-warning-bg:     #FFFAE6;
+  --color-badge-warning-text:   #974F0C;
+  --color-badge-danger-bg:      #FFEBE6;
+  --color-badge-danger-text:    #BF2600;
+  --color-badge-info-bg:        #DEEBFF;
+  --color-badge-info-text:      #0747A6;
+  --color-badge-neutral-bg:     #EBECF0;
+  --color-badge-neutral-text:   #172B4D;
+
+  --radius: var(--radius);
+  --radius-card: var(--radius-card);
+
+  /* Typography */
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+/* ---------------------------------------------------------------------------
+   Base resets
+   --------------------------------------------------------------------------- */
 @layer base {
   * {
-    border-color: hsl(var(--border));
+    border-color: var(--border);
+    box-sizing: border-box;
   }
+
+  html {
+    font-size: 14px;
+    font-family: var(--font-sans);
+  }
+
   body {
-    background-color: hsl(var(--background));
-    color: hsl(var(--foreground));
+    background-color: var(--background);
+    color: var(--foreground);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    /* Prevent text selection on drag regions */
+    user-select: none;
+  }
+
+  /* Allow text selection inside content areas */
+  input, textarea, [contenteditable] {
+    user-select: text;
   }
 }
 
-@theme inline {
-  --color-background: hsl(var(--background));
-  --color-foreground: hsl(var(--foreground));
-  --color-card: hsl(var(--card));
-  --color-card-foreground: hsl(var(--card-foreground));
-  --color-popover: hsl(var(--popover));
-  --color-popover-foreground: hsl(var(--popover-foreground));
-  --color-primary: hsl(var(--primary));
-  --color-primary-foreground: hsl(var(--primary-foreground));
-  --color-secondary: hsl(var(--secondary));
-  --color-secondary-foreground: hsl(var(--secondary-foreground));
-  --color-muted: hsl(var(--muted));
-  --color-muted-foreground: hsl(var(--muted-foreground));
-  --color-accent: hsl(var(--accent));
-  --color-accent-foreground: hsl(var(--accent-foreground));
-  --color-destructive: hsl(var(--destructive));
-  --color-destructive-foreground: hsl(var(--destructive-foreground));
-  --color-border: hsl(var(--border));
-  --color-input: hsl(var(--input));
-  --color-ring: hsl(var(--ring));
-  --radius: var(--radius);
+/* ---------------------------------------------------------------------------
+   macOS drag region helpers
+   --------------------------------------------------------------------------- */
+.app-drag {
+  -webkit-app-region: drag;
+}
+
+.app-no-drag {
+  -webkit-app-region: no-drag;
 }
