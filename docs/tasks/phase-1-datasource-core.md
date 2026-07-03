@@ -168,7 +168,7 @@ CREATE INDEX IF NOT EXISTS idx_notes_pinned ON notes(pinned);
 
 ### 1.6 `src/main/datasource/config.ts` — recent list + settings
 
-- Plaintext JSON at `app.getPath('userData')/bassistant.config.json`. **Never** store secrets or
+- Plaintext JSON at `app.getPath('userData')/kouign.config.json`. **Never** store secrets or
   content — only datasource paths, labels, and `AppSettings`.
 - Shape: `{ recents: DatasourceRef[], settings: AppSettings }` where
   `DatasourceRef = { path: string; label: string; lastOpenedAt: string }`.
@@ -203,7 +203,7 @@ CREATE INDEX IF NOT EXISTS idx_notes_pinned ON notes(pinned);
       `user_version = 1`. FTS hook point is present and commented, no FTS tables created.
 - [ ] `taskRepo`/`noteRepo` CRUD round-trips return correctly-typed domain objects
       (camelCase, boolean `pinned`, ISO timestamps, `completedAt` set/cleared by `toggleStatus`).
-- [ ] `config.ts` reads/writes `bassistant.config.json` with only paths/labels/settings; corrupt
+- [ ] `config.ts` reads/writes `kouign.config.json` with only paths/labels/settings; corrupt
       file falls back to defaults; `getSettings` merges `DEFAULT_SETTINGS`.
 - [ ] `icloud.ts` resolves the iCloud dir when present and detects `.icloud` placeholders.
 - [ ] `npm run build` (typecheck) exits 0.

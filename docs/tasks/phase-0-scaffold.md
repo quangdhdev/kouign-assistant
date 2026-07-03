@@ -34,10 +34,10 @@ assumes. The app must launch to a placeholder screen and typecheck/build cleanly
    - Component dir `src/renderer/src/components/ui/`.
    - Add ONE primitive as a smoke test: **Button**. Import path alias `@/components/ui/button`.
 6. **ESLint + Prettier** configured for TS + React; `npm run lint` passes on the scaffold.
-7. **`.gitignore`** covering: `node_modules/`, `out/`, `dist/`, `*.db`, `*.bassistantdb`,
+7. **`.gitignore`** covering: `node_modules/`, `out/`, `dist/`, `*.db`, `*.kouigndb`,
    `.DS_Store`, `*.local`.
-8. **App identity**: `package.json` `name` `bassistant`; window title **Bassistant**. (Full
-   electron-builder `.dmg` config with `appId com.bassistant.app` is Phase 5 — a stub is fine,
+8. **App identity**: `package.json` `name` `kouign-assistant`; window title **Kouign Assistant**. (Full
+   electron-builder `.dmg` config with `appId com.kouign.app` is Phase 5 — a stub is fine,
    don't build a dmg now.)
 9. **Placeholder renderer**: `App.tsx` renders a centered card with the app name and a shadcn
    `Button`, using at least one Tailwind token class (e.g. `bg-background text-foreground`) to
@@ -91,7 +91,7 @@ Report the exact output/exit status of `lint` and `build`, and confirm the dev w
 
 ## Notes / decisions already made (don't re-litigate)
 
-- Product name is **Bassistant** (repo folder `bassistant`). appId `com.bassistant.app`.
+- Product name is **Kouign Assistant** (repo folder `kouign-assistant`). appId `com.kouign.app`.
 - electron-vite is the chosen build tool (CLAUDE.md). Use its config conventions.
 - If the electron-vite template ships an example preload IPC (`ping` etc.), keeping it as the
   no-op placeholder is fine; just don't expand it.

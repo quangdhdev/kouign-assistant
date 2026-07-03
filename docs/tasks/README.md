@@ -1,4 +1,4 @@
-# Task specs — Bassistant
+# Task specs — Kouign Assistant
 
 Detailed, coder-ready specifications for each build phase. Each file is **self-contained**: a
 coder (the Sonnet `coder` sub-agent) can implement it reading only that spec plus the doc sections
@@ -45,7 +45,7 @@ contracts (TypeScript types, SQL DDL, IPC signatures) and acceptance criteria.
 - **Search:** SQLite FTS5 full-text across tasks + notes (Phase 4.5).
 - **Auto-lock:** on inactivity, default 15 min, configurable, `0` = never (Phase 2).
 - **Password:** min 8 + confirm + non-dismissible "no recovery" warning, re-validated in main (Phase 2).
-- **Name:** Bassistant, appId `com.bassistant.app` (Phase 0 identity, Phase 5 packaging).
+- **Name:** Kouign Assistant, appId `com.kouign.app` (Phase 0 identity, Phase 5 packaging).
 
 ## Out of MVP scope (post-MVP backlog — see [`../../tasks.md`](../../tasks.md))
 

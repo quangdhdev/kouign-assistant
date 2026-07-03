@@ -1,10 +1,10 @@
-# CLAUDE.md — Bassistant
+# CLAUDE.md — Kouign Assistant
 
 Guidance for Claude (and any developer) working in this repository.
 
-## What Bassistant is
+## What Kouign Assistant is
 
-Bassistant is a **private, offline-first personal assistant** desktop app for macOS.
+Kouign Assistant is a **private, offline-first personal assistant** desktop app for macOS.
 It keeps two things in one place, protected behind a password:
 
 1. **Todos** — daily tasks for both personal work and company work. Each task can link
@@ -46,12 +46,12 @@ across the user's Macs while remaining encrypted at rest.
 | Search | **SQLite FTS5** | full-text across tasks + notes; external-content tables + triggers |
 | Auto-lock | **On inactivity** | idle timer (default 15 min, configurable); closes DB handle |
 | Password | **Min 8 + confirm + warning** | no strength meter in MVP; unrecoverable by design |
-| Packaging | **electron-builder** | macOS `.dmg`; productName `Bassistant`, appId `com.bassistant.app` |
+| Packaging | **electron-builder** | macOS `.dmg`; productName `Kouign Assistant`, appId `com.kouign.app` |
 
 ## Repository layout (target)
 
 ```
-bassistant/
+kouign-assistant/
 ├─ CLAUDE.md              # this file
 ├─ ARCHITECTURE.md        # architecture, IPC surface, data model, unlock flow
 ├─ DESIGN_SYSTEM.md       # tokens, typography, spacing, components

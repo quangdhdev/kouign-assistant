@@ -1,6 +1,6 @@
-# Architecture — Bassistant
+# Architecture — Kouign Assistant
 
-This document describes how Bassistant is structured: the process model, the security
+This document describes how Kouign Assistant is structured: the process model, the security
 boundary, the data model, the IPC surface, and the startup/unlock flow.
 
 ## 1. Goals & constraints
@@ -27,7 +27,7 @@ touches Node, the filesystem, or the database directly.**
                 │                                 ▼
 ┌───────────────┴───────────────────────────────────────────────┐
 │ Preload (contextBridge)                                        │
-│  - Exposes a typed BassistantApi on window.api                   │
+│  - Exposes a typed Kouign AssistantApi on window.api                   │
 │  - Only forwards whitelisted IPC channels                      │
 └───────────────▲───────────────────────────────────────────────┘
                 │ ipcMain.handle
@@ -42,7 +42,7 @@ touches Node, the filesystem, or the database directly.**
 └───────────────────────────────────────────────────────────────┘
                 │
                 ▼
-        Encrypted SQLite file (.bassistantdb)  ── optionally in iCloud Drive
+        Encrypted SQLite file (.kouigndb)  ── optionally in iCloud Drive
 ```
 
 ### Layer responsibilities
@@ -51,7 +51,7 @@ touches Node, the filesystem, or the database directly.**
   keying the encrypted database, running migrations, serving IPC requests, and reading the
   small plaintext config that lists recent datasources.
 - **Preload** — the only bridge. It uses `contextBridge.exposeInMainWorld('api', …)` to
-  publish a **typed** `BassistantApi`. It forwards a fixed set of channels and nothing else.
+  publish a **typed** `Kouign AssistantApi`. It forwards a fixed set of channels and nothing else.
 - **Renderer** — the React UI. It calls `window.api.*`, receives plain data, and renders.
   It has no filesystem or DB access and cannot import Node modules.
 
@@ -62,7 +62,7 @@ src/
 ├─ shared/                 # Single source of truth across all layers
 │  ├─ types.ts             # Task, Note, DatasourceRef, SessionState, SearchResult, AppSettings, IpcResult<T>
 │  ├─ ipc.ts               # Centralized IPC channel name constants
-│  └─ api.ts               # BassistantApi interface (shape of window.api)
+│  └─ api.ts               # Kouign AssistantApi interface (shape of window.api)
 │
 ├─ main/
 │  ├─ index.ts             # App lifecycle + window creation
@@ -72,7 +72,7 @@ src/
 │  │  ├─ migrate.ts        # idempotent DDL bootstrap (incl. FTS5 tables + triggers) + user_version
 │  │  └─ repositories.ts   # taskRepo / noteRepo / searchRepo → map rows to domain types
 │  ├─ datasource/
-│  │  ├─ config.ts         # recent datasources + AppSettings (plaintext userData/bassistant.config.json)
+│  │  ├─ config.ts         # recent datasources + AppSettings (plaintext userData/kouign.config.json)
 │  │  └─ icloud.ts         # resolve iCloud Drive dir, detect .icloud placeholders
 │  └─ ipc/
 │     ├─ result.ts         # handle() wrapper → IpcResult<T>, error-code → message map
@@ -84,7 +84,7 @@ src/
 │     └─ shell.ts          # openExternal (http/https/slack only)
 │
 ├─ preload/
-│  ├─ index.ts             # builds BassistantApi from IPC channels, exposes on window.api
+│  ├─ index.ts             # builds Kouign AssistantApi from IPC channels, exposes on window.api
 │  └─ index.d.ts           # global Window typing
 │
 └─ renderer/
@@ -212,7 +212,7 @@ renderer: session() → { unlocked: false }
    │
    ▼
 LockGate
-   ├─ Recent datasources (from userData/bassistant.config.json — paths + labels only)
+   ├─ Recent datasources (from userData/kouign.config.json — paths + labels only)
    ├─ "Open existing…"  → native open dialog
    └─ "Create new…"     → native save dialog (defaults to iCloud Drive if present)
    │

@@ -47,8 +47,8 @@ Tokens already exist from Phase 2 — this task is the toggle + persistence + sy
 - `electron-builder.yml` (**config skeleton contract**):
 
 ```yaml
-appId: com.bassistant.app
-productName: Bassistant
+appId: com.kouign.app
+productName: Kouign Assistant
 directories:
   output: dist
   buildResources: build
@@ -61,7 +61,7 @@ mac:
   icon: build/icon.icns
   hardenedRuntime: true
 dmg:
-  title: Bassistant
+  title: Kouign Assistant
 ```
 
 - Wire `npm run build:mac` (per CLAUDE.md) to produce a `.dmg`. Ensure the native module is
@@ -85,7 +85,7 @@ Update `README.md` "Getting started" to reflect the real scripts and a first-run
 - [ ] Every view has empty + loading states; all mutations toast success/error consistently.
 - [ ] All shortcuts in the map work, are suppressed while typing (except Esc/⌘K), and are discoverable.
 - [ ] Dark-mode toggle switches themes, persists via settings, and `system` follows the OS.
-- [ ] `npm run build:mac` produces a launchable `Bassistant.dmg`; the packaged app opens a
+- [ ] `npm run build:mac` produces a launchable `Kouign Assistant.dmg`; the packaged app opens a
       datasource (native module loads — no ABI error).
 - [ ] README quick start matches real scripts; light + dark screenshots included.
 - [ ] `npm run lint`/`build` exit 0.
@@ -94,8 +94,8 @@ Update `README.md` "Getting started" to reflect the real scripts and a first-run
 
 ```bash
 npm run lint && npm run build
-npm run build:mac    # produces dist/Bassistant.dmg
-open dist/Bassistant.dmg   # install + launch the packaged app, create/open a datasource
+npm run build:mac    # produces dist/Kouign Assistant.dmg
+open dist/Kouign Assistant.dmg   # install + launch the packaged app, create/open a datasource
 npm run dev          # exercise shortcuts, dark-mode toggle, empty/loading/toast states
 ```
 

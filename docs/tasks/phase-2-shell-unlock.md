@@ -77,7 +77,7 @@ export const IPC = {
 // src/shared/api.ts — shape of window.api exposed by preload. Every method resolves IpcResult<T>.
 import type { Task, Note, DatasourceRef, SessionState, SearchResult, AppSettings } from './types'
 
-export interface BassistantApi {
+export interface Kouign AssistantApi {
   datasource: {
     list(): Promise<IpcResult<DatasourceRef[]>>
     pickExisting(): Promise<IpcResult<string | null>>
@@ -126,9 +126,9 @@ export interface BassistantApi {
 ### 2.4 Main — datasource + settings handlers
 
 - `src/main/ipc/datasource.ts` — register all `IPC.datasource.*`:
-  - `pickExisting` → `dialog.showOpenDialog` (single `.bassistantdb` file) → path | null.
+  - `pickExisting` → `dialog.showOpenDialog` (single `.kouigndb` file) → path | null.
   - `pickNewLocation` → `dialog.showSaveDialog` defaulting to `defaultDatasourceDir()` and
-    `<defaultName>.bassistantdb` → path | null.
+    `<defaultName>.kouigndb` → path | null.
   - `create` → **re-validate password policy** (min 8 → else `WEAK_PASSWORD`) before creating.
   - `unlock` / `lock` / `session` → delegate to `session.ts`. `remove` → `removeRecent` → list.
 - `src/main/ipc/settings.ts` — `get`/`update` over Phase 1 `config.ts`; on `update` of
@@ -140,11 +140,11 @@ export interface BassistantApi {
 
 ### 2.5 Preload (`src/preload/index.ts` + `index.d.ts`)
 
-- Build `BassistantApi` by wrapping `ipcRenderer.invoke(IPC.*, payload)` per method; expose on
+- Build `Kouign AssistantApi` by wrapping `ipcRenderer.invoke(IPC.*, payload)` per method; expose on
   `window.api` via `contextBridge.exposeInMainWorld('api', api)`.
 - `onSessionChanged(cb)` subscribes to `IPC.events.sessionChanged` and returns an unsubscribe.
 - `pingActivity()` sends `IPC.activity.ping` (fire-and-forget).
-- `index.d.ts` augments `Window` with `api: BassistantApi`. Only whitelisted channels are forwarded.
+- `index.d.ts` augments `Window` with `api: Kouign AssistantApi`. Only whitelisted channels are forwarded.
 
 ### 2.6 Renderer — shell & unlock
 
