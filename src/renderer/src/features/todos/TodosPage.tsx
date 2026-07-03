@@ -15,10 +15,11 @@
  *   - Overflow menu (Edit, Set status →, Delete with confirm)
  */
 
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { Plus, ExternalLink, MoreHorizontal, Pencil, Trash2 } from 'lucide-react'
 import type { Task, TaskStatus, TaskCategory } from '@shared/types'
 import { useTasksStore } from '@/store/tasks'
+import { useUiStore } from '@/store/ui'
 import { useToast } from '@/components/ToastProvider'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -270,6 +271,7 @@ function TaskRow({ task, onEdit, onDelete, confirmDelete }: TaskRowProps): React
 export default function TodosPage(): React.ReactElement {
   const { toast } = useToast()
   const { tasks, filter, loading, load, setFilter, remove, openEditId, setOpenEditId } = useTasksStore()
+  const newTaskSeq = useUiStore((s) => s.newTaskSeq)
 
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editingTask, setEditingTask] = useState<Task | null>(null)
@@ -292,6 +294,14 @@ export default function TodosPage(): React.ReactElement {
       setOpenEditId(null) // consume
     }
   }, [openEditId, tasks]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Open "New task" dialog when the ⌘N shortcut fires from AppShell.
+  const lastNewTaskSeqRef = useRef(newTaskSeq)
+  useEffect(() => {
+    if (newTaskSeq === lastNewTaskSeqRef.current) return
+    lastNewTaskSeqRef.current = newTaskSeq
+    openCreate()
+  }, [newTaskSeq])
 
   // -- Category filter --
   const activeCategory = filter.category ?? null

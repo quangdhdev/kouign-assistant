@@ -186,3 +186,28 @@
 .app-no-drag {
   -webkit-app-region: no-drag;
 }
+
+/* ---------------------------------------------------------------------------
+   Toast enter animation — slide up 8px + fade in, 150 ms ease-out.
+   Disabled when prefers-reduced-motion: reduce is set.
+   --------------------------------------------------------------------------- */
+@keyframes toast-slide-up {
+  from {
+    transform: translateY(8px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.toast-enter {
+  animation: toast-slide-up 150ms ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .toast-enter {
+    animation: none;
+  }
+}

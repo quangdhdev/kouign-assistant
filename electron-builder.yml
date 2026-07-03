@@ -1,0 +1,17 @@
+appId: com.kouign.app
+productName: Kouign Assistant
+directories:
+  output: dist
+  buildResources: build
+files:
+  - out/**/*
+  - package.json
+mac:
+  category: public.app-category.productivity
+  target: dmg
+  icon: build/icon.icns
+  hardenedRuntime: true
+  # identity: null — signing is a release follow-up; local unsigned DMG only
+  identity: null
+dmg:
+  title: Kouign Assistant

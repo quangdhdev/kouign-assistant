@@ -13,11 +13,12 @@
  * If one already exists for today, selects it instead of creating a duplicate.
  */
 
-import React, { useEffect } from 'react'
+import React, { useEffect, useRef } from 'react'
 import { Plus, Pin, FileText, BookOpen, Bookmark, ChevronDown } from 'lucide-react'
 import type { NoteType } from '@shared/types'
 import type { Note } from '@shared/types'
 import { useNotesStore } from '@/store/notes'
+import { useUiStore } from '@/store/ui'
 import { useToast } from '@/components/ToastProvider'
 import { Button } from '@/components/ui/button'
 import {
@@ -132,6 +133,7 @@ function EmptyState({ onNew }: { onNew: () => void }): React.ReactElement {
 export default function NotesPage(): React.ReactElement {
   const { toast } = useToast()
   const { notes, filter, selectedId, loading, load, setFilter, select, create } = useNotesStore()
+  const newNoteSeq = useUiStore((s) => s.newNoteSeq)
 
   // Derive the active tab type from the current store filter
   const activeTabType = filter.type
@@ -140,6 +142,14 @@ export default function NotesPage(): React.ReactElement {
   useEffect(() => {
     load().catch(e => toast(e instanceof Error ? e.message : 'Failed to load notes', 'error'))
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Create a new note when the ⌘N shortcut fires from AppShell.
+  const lastNewNoteSeqRef = useRef(newNoteSeq)
+  useEffect(() => {
+    if (newNoteSeq === lastNewNoteSeqRef.current) return
+    lastNewNoteSeqRef.current = newNoteSeq
+    handleNewNote()
+  }, [newNoteSeq]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // ---------------------------------------------------------------------------
   // Tab change

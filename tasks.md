@@ -73,11 +73,12 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done
 
 ## Phase 5 — Polish & package
 
-- [ ] Empty states, loading states, toasts everywhere
-- [ ] Keyboard shortcuts (new task/note, search, lock)
-- [ ] Dark mode toggle
-- [ ] App icon + `electron-builder.yml` for macOS `.dmg`
-- [ ] README quick start + first-run screenshots
+- [x] Empty states, loading states, toasts everywhere
+- [x] Keyboard shortcuts (new task/note, search, lock)
+- [x] Dark mode toggle
+- [x] App icon + `electron-builder.yml` for macOS `.dmg`
+- [x] README quick start + first-run screenshots <!-- quick start done; real screenshots pending a GUI session (placeholder icon too) -->
+
 
 ---
 

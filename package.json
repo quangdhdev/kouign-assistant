@@ -9,7 +9,7 @@
     "typecheck": "tsc -p tsconfig.node.json && tsc -p tsconfig.web.json",
     "lint": "eslint src",
     "preview": "electron-vite preview",
-    "build:mac": "npm run build && electron-builder --mac",
+    "build:mac": "npm run build && CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --mac dmg",
     "postinstall": "electron-builder install-app-deps"
   },
   "devDependencies": {
@@ -51,15 +51,5 @@
     "tailwind-merge": "^2.5.4",
     "tailwindcss": "^4.3.2",
     "zustand": "^5.0.14"
-  },
-  "build": {
-    "appId": "com.kouign.app",
-    "productName": "Kouign Assistant",
-    "directories": {
-      "output": "dist"
-    },
-    "mac": {
-      "target": "dmg"
-    }
   }
 }
