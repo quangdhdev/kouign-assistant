@@ -1,4 +1,4 @@
-# tasks.md — Personer build backlog
+# tasks.md — Bassistant build backlog
 
 A living checklist for building the MVP. Phases are ordered; check items off as they land.
 See [ARCHITECTURE.md](./ARCHITECTURE.md) and [DESIGN_SYSTEM.md](./DESIGN_SYSTEM.md) for the
@@ -16,7 +16,7 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done
 - [ ] Add Tailwind CSS v4 + `@tailwindcss/vite`
 - [ ] Init shadcn/ui (`components.json`, `new-york` style) and add base primitives
 - [ ] ESLint + Prettier
-- [ ] `.gitignore` (ignore `*.personerdb`, `*.db`, `out/`, `dist/`, `node_modules/`)
+- [ ] `.gitignore` (ignore `*.bassistantdb`, `*.db`, `out/`, `dist/`, `node_modules/`)
 
 ## Phase 1 — Encrypted datasource core
 
@@ -25,7 +25,7 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done
 - [ ] `db/schema.ts` — Drizzle schema for `tasks` and `notes`
 - [ ] `db/migrate.ts` — idempotent DDL + `PRAGMA user_version`
 - [ ] `db/repositories.ts` — `taskRepo` / `noteRepo` mapping rows → shared types
-- [ ] `datasource/config.ts` — recent datasources (plaintext `userData/personer.config.json`)
+- [ ] `datasource/config.ts` — recent datasources (plaintext `userData/bassistant.config.json`)
 - [ ] `datasource/icloud.ts` — resolve iCloud Drive dir; detect `.icloud` placeholders
 - [ ] Rebuild native module for Electron (`electron-builder install-app-deps`)
 - [ ] Wrong-password path returns a friendly error
@@ -37,10 +37,13 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done
 - [ ] `ipc/result.ts` — `handle()` wrapper → `IpcResult<T>` + error-code → message map
 - [ ] Preload `contextBridge` exposing typed `window.api`
 - [ ] Renderer: `main.tsx` (HashRouter + ToastProvider), `App.tsx` session gate
-- [ ] `LockGate` — recent list, open existing, create new (with password + confirm + warning)
+- [ ] `LockGate` — recent list, open existing, create new
+- [ ] **Password policy** on create: min 8 chars + confirm-match + non-dismissible "no recovery" warning; re-validated in `datasource:create` handler
 - [ ] `AppShell` — draggable top bar, sidebar nav, nested routes
 - [ ] `store/session.ts` (Zustand) — refresh / unlock / create / lock
-- [ ] `SettingsPage` — show datasource, lock & switch, security note
+- [ ] `settings` IPC + `datasource/config.ts` `AppSettings` (autoLockMinutes default 15, theme); `store/settings.ts`
+- [ ] **Auto-lock on inactivity** — renderer activity ping → main idle timer → close handle + push session update; `0`/"Never" disables
+- [ ] `SettingsPage` — show datasource, lock & switch, **auto-lock timeout control**, security note
 - [ ] Design tokens in `styles/globals.css` (light + dark)
 
 ## Phase 3 — Todos feature
@@ -61,6 +64,13 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done
 - [ ] Daily note quick-create (date-titled)
 - [ ] Bookmark type — URL field + open-in-browser
 
+## Phase 4.5 — Search (FTS5)
+
+- [ ] `migrate.ts` — create `tasks_fts` / `notes_fts` FTS5 external-content tables + sync triggers (raw DDL, `user_version`-guarded)
+- [ ] `searchRepo` — bm25-ranked query across tasks + notes, returning `SearchResult[]` with `snippet()`
+- [ ] `search` IPC channel + `store` wiring
+- [ ] Global search UI (top-bar input or command palette) → grouped task/note results → jump to item
+
 ## Phase 5 — Polish & package
 
 - [ ] Empty states, loading states, toasts everywhere
@@ -74,7 +84,6 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done
 ## Backlog / post-MVP ideas
 
 - [ ] Tags for tasks & notes (`tags`, `task_tags`, `note_tags`)
-- [ ] Full-text search across notes and tasks
 - [ ] Markdown live preview in the notes editor
 - [ ] Live Jira/Slack integration (OAuth) to show issue status / message preview
 - [ ] "Remember on this Mac" via macOS Keychain (`keytar`)

@@ -1,10 +1,10 @@
-# CLAUDE.md — Personer
+# CLAUDE.md — Bassistant
 
 Guidance for Claude (and any developer) working in this repository.
 
-## What Personer is
+## What Bassistant is
 
-Personer is a **private, offline-first personal assistant** desktop app for macOS.
+Bassistant is a **private, offline-first personal assistant** desktop app for macOS.
 It keeps two things in one place, protected behind a password:
 
 1. **Todos** — daily tasks for both personal work and company work. Each task can link
@@ -43,12 +43,15 @@ across the user's Macs while remaining encrypted at rest.
 | State | **Zustand** | renderer UI/data stores |
 | Routing | **React Router** (hash history) | Todos / Notes / Settings |
 | Integrations | **Store links only** | tasks hold a Jira/Slack URL; no OAuth in MVP |
-| Packaging | **electron-builder** | macOS `.dmg` |
+| Search | **SQLite FTS5** | full-text across tasks + notes; external-content tables + triggers |
+| Auto-lock | **On inactivity** | idle timer (default 15 min, configurable); closes DB handle |
+| Password | **Min 8 + confirm + warning** | no strength meter in MVP; unrecoverable by design |
+| Packaging | **electron-builder** | macOS `.dmg`; productName `Bassistant`, appId `com.bassistant.app` |
 
 ## Repository layout (target)
 
 ```
-personer/
+bassistant/
 ├─ CLAUDE.md              # this file
 ├─ ARCHITECTURE.md        # architecture, IPC surface, data model, unlock flow
 ├─ DESIGN_SYSTEM.md       # tokens, typography, spacing, components

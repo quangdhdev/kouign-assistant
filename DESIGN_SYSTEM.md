@@ -1,6 +1,6 @@
-# Design System — Personer
+# Design System — Bassistant
 
-Personer's UI follows an **Atlassian / Jira-flavored** design language, implemented with
+Bassistant's UI follows an **Atlassian / Jira-flavored** design language, implemented with
 **Tailwind CSS v4** and **shadcn/ui** primitives. This document defines the tokens and
 conventions so the app looks consistent and familiar.
 

@@ -1,8 +1,8 @@
-# Personer
+# Bassistant
 
 > Your private, encrypted personal assistant for macOS — todos & notes in one place.
 
-Personer is an **offline-first Electron app** that keeps your daily tasks and notes in a
+Bassistant is an **offline-first Electron app** that keeps your daily tasks and notes in a
 single **encrypted SQLite datasource**. Choose (or create) your datasource when the app
 starts, protect it with a password, and optionally keep the file in **iCloud Drive** so it
 syncs across your Macs — always encrypted at rest.
