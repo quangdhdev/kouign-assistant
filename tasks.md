@@ -20,15 +20,15 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done
 
 ## Phase 1 — Encrypted datasource core
 
-- [ ] Add deps: `better-sqlite3-multiple-ciphers`, `drizzle-orm`, `drizzle-kit`
-- [ ] `db/connection.ts` — open/create/close, `PRAGMA cipher='sqlcipher'` + `key`, password probe
-- [ ] `db/schema.ts` — Drizzle schema for `tasks` and `notes`
-- [ ] `db/migrate.ts` — idempotent DDL + `PRAGMA user_version`
-- [ ] `db/repositories.ts` — `taskRepo` / `noteRepo` mapping rows → shared types
-- [ ] `datasource/config.ts` — recent datasources (plaintext `userData/kouign.config.json`)
-- [ ] `datasource/icloud.ts` — resolve iCloud Drive dir; detect `.icloud` placeholders
-- [ ] Rebuild native module for Electron (`electron-builder install-app-deps`)
-- [ ] Wrong-password path returns a friendly error
+- [x] Add deps: `better-sqlite3-multiple-ciphers`, `drizzle-orm`, `drizzle-kit`
+- [x] `db/connection.ts` — open/create/close, `PRAGMA cipher='sqlcipher'` + `key`, password probe
+- [x] `db/schema.ts` — Drizzle schema for `tasks` and `notes`
+- [x] `db/migrate.ts` — idempotent DDL + `PRAGMA user_version`
+- [x] `db/repositories.ts` — `taskRepo` / `noteRepo` mapping rows → shared types
+- [x] `datasource/config.ts` — recent datasources (plaintext `userData/kouign.config.json`)
+- [x] `datasource/icloud.ts` — resolve iCloud Drive dir; detect `.icloud` placeholders
+- [x] Rebuild native module for Electron (`electron-builder install-app-deps`)
+- [x] Wrong-password path returns a friendly error
 
 ## Phase 2 — App shell & unlock UI
 

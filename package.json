@@ -9,10 +9,12 @@
     "typecheck": "tsc -p tsconfig.node.json && tsc -p tsconfig.web.json",
     "lint": "eslint src",
     "preview": "electron-vite preview",
-    "build:mac": "npm run build && electron-builder --mac"
+    "build:mac": "npm run build && electron-builder --mac",
+    "postinstall": "electron-builder install-app-deps"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
+    "drizzle-kit": "^0.31.4",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "@typescript-eslint/eslint-plugin": "^8.0.0",
@@ -31,6 +33,8 @@
     "vite": "^7.3.6"
   },
   "dependencies": {
+    "better-sqlite3-multiple-ciphers": "^11.8.1",
+    "drizzle-orm": "^0.44.2",
     "@radix-ui/react-slot": "^1.1.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
