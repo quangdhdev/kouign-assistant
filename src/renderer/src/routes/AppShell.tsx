@@ -2,15 +2,7 @@ import React from 'react'
 import { NavLink, Routes, Route, Navigate } from 'react-router-dom'
 import { useSessionStore } from '@/store/session'
 import SettingsPage from './SettingsPage'
-
-function TodosPlaceholder(): React.ReactElement {
-  return (
-    <div className="p-6">
-      <h2 className="text-base font-semibold text-foreground mb-2">Todos</h2>
-      <p className="text-sm text-muted-foreground">Tasks will appear here in Phase 3.</p>
-    </div>
-  )
-}
+import TodosPage from '@/features/todos/TodosPage'
 
 function NotesPlaceholder(): React.ReactElement {
   return (
@@ -73,7 +65,7 @@ export default function AppShell(): React.ReactElement {
         <main className="app-no-drag flex-1 overflow-y-auto">
           <Routes>
             <Route index element={<Navigate to="/todos" replace />} />
-            <Route path="todos" element={<TodosPlaceholder />} />
+            <Route path="todos" element={<TodosPage />} />
             <Route path="notes" element={<NotesPlaceholder />} />
             <Route path="settings" element={<SettingsPage />} />
             <Route path="*" element={<Navigate to="/todos" replace />} />

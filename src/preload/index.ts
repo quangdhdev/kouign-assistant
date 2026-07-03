@@ -1,6 +1,7 @@
 import { contextBridge, ipcRenderer } from 'electron'
 import type { IpcRendererEvent } from 'electron'
 import type { KouignApi } from '@shared/api'
+import type { CreateTaskInput, UpdateTaskInput, TaskFilter } from '@shared/types'
 import { IPC } from '@shared/ipc'
 
 const api: KouignApi = {
@@ -15,7 +16,13 @@ const api: KouignApi = {
     session: () => ipcRenderer.invoke(IPC.datasource.session),
   },
 
-  tasks: {},
+  tasks: {
+    list:         (filter?: TaskFilter)                   => ipcRenderer.invoke(IPC.tasks.list, filter),
+    create:       (input: CreateTaskInput)                => ipcRenderer.invoke(IPC.tasks.create, input),
+    update:       (id: number, patch: UpdateTaskInput)    => ipcRenderer.invoke(IPC.tasks.update, id, patch),
+    remove:       (id: number)                            => ipcRenderer.invoke(IPC.tasks.remove, id),
+    toggleStatus: (id: number)                            => ipcRenderer.invoke(IPC.tasks.toggleStatus, id),
+  },
 
   notes: {},
 

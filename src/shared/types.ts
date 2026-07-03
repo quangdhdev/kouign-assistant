@@ -106,6 +106,28 @@ export interface SessionState {
 }
 
 // ---------------------------------------------------------------------------
+// Task input DTOs (Phase 3 — single source of truth; repositories.ts imports from here)
+// ---------------------------------------------------------------------------
+
+export interface CreateTaskInput {
+  title: string
+  description?: string | null
+  status?: TaskStatus         // default 'todo'
+  priority?: TaskPriority     // default 'medium'
+  category?: TaskCategory     // default 'personal'
+  dueDate?: string | null
+  jiraUrl?: string | null
+  slackUrl?: string | null
+}
+
+export type UpdateTaskInput = Partial<CreateTaskInput>
+
+export interface TaskFilter {
+  category?: TaskCategory
+  status?: TaskStatus
+}
+
+// ---------------------------------------------------------------------------
 // Search (Phase 2 declaration, Phase 4.5 implementation)
 // ---------------------------------------------------------------------------
 

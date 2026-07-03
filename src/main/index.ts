@@ -3,6 +3,7 @@ import { join } from 'path'
 import { registerDatasourceHandlers } from './ipc/datasource'
 import { registerSettingsHandlers } from './ipc/settings'
 import { registerShellHandlers } from './ipc/shell'
+import { registerTaskHandlers } from './ipc/tasks'
 
 function createWindow(): void {
   const mainWindow = new BrowserWindow({
@@ -60,6 +61,7 @@ app.whenReady().then(() => {
   registerDatasourceHandlers()
   registerSettingsHandlers()
   registerShellHandlers()
+  registerTaskHandlers()
 
   createWindow()
 

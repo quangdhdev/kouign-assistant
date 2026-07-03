@@ -48,12 +48,12 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done
 
 ## Phase 3 — Todos feature
 
-- [ ] `store/tasks.ts` — list / create / update / toggleStatus / remove
-- [ ] IPC + repo for tasks
-- [ ] `TodosPage` — list, category + status filters, empty state
-- [ ] `TaskDialog` — create/edit (title, description, status, priority, category, due date)
-- [ ] Jira / Slack URL fields + open-in-browser chips (via `shell.openExternal`)
-- [ ] Checkbox status advance; row overflow menu (edit, set status, delete)
+- [x] `store/tasks.ts` — list / create / update / toggleStatus / remove
+- [x] IPC + repo for tasks
+- [x] `TodosPage` — list, category + status filters, empty state
+- [x] `TaskDialog` — create/edit (title, description, status, priority, category, due date)
+- [x] Jira / Slack URL fields + open-in-browser chips (via `shell.openExternal`)
+- [x] Checkbox status advance; row overflow menu (edit, set status, delete)
 
 ## Phase 4 — Notes feature
 

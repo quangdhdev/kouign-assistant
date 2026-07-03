@@ -13,7 +13,7 @@
  */
 
 import type Database from 'better-sqlite3-multiple-ciphers'
-import type { Task, Note, TaskStatus, TaskPriority, TaskCategory, NoteType } from '@shared/types'
+import type { Task, Note, TaskStatus, TaskPriority, TaskCategory, NoteType, CreateTaskInput, UpdateTaskInput, TaskFilter } from '@shared/types'
 
 // ---------------------------------------------------------------------------
 // Raw DB row shapes (snake_case, matching SQLite columns exactly)
@@ -87,41 +87,8 @@ function now(): string {
 // ---------------------------------------------------------------------------
 // Task repository
 // ---------------------------------------------------------------------------
-
-export type TaskFilter = {
-  status?: TaskStatus
-  category?: TaskCategory
-}
-
-/**
- * Fields the caller supplies when creating a task.
- * Server-managed fields (id, createdAt, updatedAt, completedAt) are excluded.
- */
-export type CreateTaskInput = {
-  title: string
-  description?: string | null
-  status?: TaskStatus
-  priority?: TaskPriority
-  category?: TaskCategory
-  dueDate?: string | null
-  jiraUrl?: string | null
-  slackUrl?: string | null
-}
-
-/**
- * Fields the caller may patch when updating a task.
- * id and timestamp fields cannot be set by the caller.
- */
-export type UpdateTaskInput = Partial<{
-  title: string
-  description: string | null
-  status: TaskStatus
-  priority: TaskPriority
-  category: TaskCategory
-  dueDate: string | null
-  jiraUrl: string | null
-  slackUrl: string | null
-}>
+// CreateTaskInput / UpdateTaskInput / TaskFilter are defined in @shared/types and
+// imported above — no local re-declaration needed.
 
 /** Status cycle: todo → in_progress → done → todo */
 const NEXT_STATUS: Record<TaskStatus, TaskStatus> = {
