@@ -1,5 +1,5 @@
 // src/shared/api.ts — shape of window.api exposed by preload. Every method resolves IpcResult<T>.
-import type { Task, Note, DatasourceRef, SessionState, SearchResult, AppSettings, IpcResult, CreateTaskInput, UpdateTaskInput, TaskFilter } from './types'
+import type { Task, Note, DatasourceRef, SessionState, SearchResult, AppSettings, IpcResult, CreateTaskInput, UpdateTaskInput, TaskFilter, CreateNoteInput, UpdateNoteInput, NoteFilter } from './types'
 
 export interface KouignApi {
   datasource: {
@@ -19,8 +19,13 @@ export interface KouignApi {
     remove(id: number): Promise<IpcResult<number>>        // returns removed id
     toggleStatus(id: number): Promise<IpcResult<Task>>   // advances todo→in_progress→done→todo
   }
-  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-  notes: { /* Phase 4 fills signatures; namespace declared now */ }
+  notes: {
+    list(filter?: NoteFilter): Promise<IpcResult<Note[]>>
+    create(input: CreateNoteInput): Promise<IpcResult<Note>>
+    update(id: number, patch: UpdateNoteInput): Promise<IpcResult<Note>>
+    remove(id: number): Promise<IpcResult<number>>       // returns removed id
+    togglePin(id: number): Promise<IpcResult<Note>>
+  }
   search: { query(q: string): Promise<IpcResult<SearchResult[]>> }
   settings: {
     get(): Promise<IpcResult<AppSettings>>
@@ -32,4 +37,4 @@ export interface KouignApi {
 }
 
 // Re-export for convenience
-export type { Task, Note, DatasourceRef, SessionState, SearchResult, AppSettings, IpcResult, CreateTaskInput, UpdateTaskInput, TaskFilter }
+export type { Task, Note, DatasourceRef, SessionState, SearchResult, AppSettings, IpcResult, CreateTaskInput, UpdateTaskInput, TaskFilter, CreateNoteInput, UpdateNoteInput, NoteFilter }

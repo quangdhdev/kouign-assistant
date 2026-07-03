@@ -57,12 +57,12 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done
 
 ## Phase 4 — Notes feature
 
-- [ ] `store/notes.ts` — list / create / update / togglePin / remove
-- [ ] IPC + repo for notes
-- [ ] `NotesPage` — master–detail with type tabs (All / Notes / Daily / Bookmarks)
-- [ ] `NoteEditor` — title + markdown body; autosave; pin; delete
-- [ ] Daily note quick-create (date-titled)
-- [ ] Bookmark type — URL field + open-in-browser
+- [x] `store/notes.ts` — list / create / update / togglePin / remove
+- [x] IPC + repo for notes
+- [x] `NotesPage` — master–detail with type tabs (All / Notes / Daily / Bookmarks)
+- [x] `NoteEditor` — title + markdown body; autosave; pin; delete
+- [x] Daily note quick-create (date-titled)
+- [x] Bookmark type — URL field + open-in-browser
 
 ## Phase 4.5 — Search (FTS5)
 

@@ -128,6 +128,22 @@ export interface TaskFilter {
 }
 
 // ---------------------------------------------------------------------------
+// Note input DTOs (Phase 4 — single source of truth; repositories.ts imports from here)
+// ---------------------------------------------------------------------------
+
+export interface CreateNoteInput {
+  title: string
+  content?: string           // markdown source, default ''
+  type?: NoteType            // default 'note'
+  url?: string | null        // bookmarks
+  pinned?: boolean           // default false
+}
+
+export type UpdateNoteInput = Partial<CreateNoteInput>
+
+export interface NoteFilter { type?: NoteType }
+
+// ---------------------------------------------------------------------------
 // Search (Phase 2 declaration, Phase 4.5 implementation)
 // ---------------------------------------------------------------------------
 

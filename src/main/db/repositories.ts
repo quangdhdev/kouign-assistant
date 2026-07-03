@@ -13,7 +13,7 @@
  */
 
 import type Database from 'better-sqlite3-multiple-ciphers'
-import type { Task, Note, TaskStatus, TaskPriority, TaskCategory, NoteType, CreateTaskInput, UpdateTaskInput, TaskFilter } from '@shared/types'
+import type { Task, Note, TaskStatus, TaskPriority, TaskCategory, NoteType, CreateTaskInput, UpdateTaskInput, TaskFilter, CreateNoteInput, UpdateNoteInput, NoteFilter } from '@shared/types'
 
 // ---------------------------------------------------------------------------
 // Raw DB row shapes (snake_case, matching SQLite columns exactly)
@@ -202,35 +202,8 @@ export function taskRepo(db: Database.Database) {
 // ---------------------------------------------------------------------------
 // Note repository
 // ---------------------------------------------------------------------------
-
-export type NoteFilter = {
-  type?: NoteType
-  pinned?: boolean
-}
-
-/**
- * Fields the caller supplies when creating a note.
- * Server-managed fields (id, createdAt, updatedAt) are excluded.
- */
-export type CreateNoteInput = {
-  title: string
-  content?: string
-  type?: NoteType
-  url?: string | null
-  pinned?: boolean
-}
-
-/**
- * Fields the caller may patch when updating a note.
- * id and timestamp fields cannot be set by the caller.
- */
-export type UpdateNoteInput = Partial<{
-  title: string
-  content: string
-  type: NoteType
-  url: string | null
-  pinned: boolean
-}>
+// CreateNoteInput / UpdateNoteInput / NoteFilter are defined in @shared/types and
+// imported above — no local re-declaration needed.
 
 export function noteRepo(db: Database.Database) {
   return {
@@ -246,13 +219,9 @@ export function noteRepo(db: Database.Database) {
         conditions.push('type = ?')
         params.push(filter.type)
       }
-      if (filter?.pinned !== undefined) {
-        conditions.push('pinned = ?')
-        params.push(filter.pinned ? 1 : 0)
-      }
 
       const where = conditions.length ? ` WHERE ${conditions.join(' AND ')}` : ''
-      const sql = `SELECT * FROM notes${where} ORDER BY pinned DESC, created_at DESC`
+      const sql = `SELECT * FROM notes${where} ORDER BY pinned DESC, updated_at DESC`
       const rows = db.prepare(sql).all(...params) as RawNoteRow[]
       return rows.map(mapNote)
     },

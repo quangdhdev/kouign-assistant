@@ -4,6 +4,7 @@ import { registerDatasourceHandlers } from './ipc/datasource'
 import { registerSettingsHandlers } from './ipc/settings'
 import { registerShellHandlers } from './ipc/shell'
 import { registerTaskHandlers } from './ipc/tasks'
+import { registerNoteHandlers } from './ipc/notes'
 
 function createWindow(): void {
   const mainWindow = new BrowserWindow({
@@ -62,6 +63,7 @@ app.whenReady().then(() => {
   registerSettingsHandlers()
   registerShellHandlers()
   registerTaskHandlers()
+  registerNoteHandlers()
 
   createWindow()
 

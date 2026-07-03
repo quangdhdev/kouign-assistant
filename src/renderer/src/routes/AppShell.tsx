@@ -3,15 +3,7 @@ import { NavLink, Routes, Route, Navigate } from 'react-router-dom'
 import { useSessionStore } from '@/store/session'
 import SettingsPage from './SettingsPage'
 import TodosPage from '@/features/todos/TodosPage'
-
-function NotesPlaceholder(): React.ReactElement {
-  return (
-    <div className="p-6">
-      <h2 className="text-base font-semibold text-foreground mb-2">Notes</h2>
-      <p className="text-sm text-muted-foreground">Notes will appear here in Phase 4.</p>
-    </div>
-  )
-}
+import NotesPage from '@/features/notes/NotesPage'
 
 function SidebarLink({ to, children }: { to: string; children: React.ReactNode }): React.ReactElement {
   return (
@@ -66,7 +58,7 @@ export default function AppShell(): React.ReactElement {
           <Routes>
             <Route index element={<Navigate to="/todos" replace />} />
             <Route path="todos" element={<TodosPage />} />
-            <Route path="notes" element={<NotesPlaceholder />} />
+            <Route path="notes" element={<NotesPage />} />
             <Route path="settings" element={<SettingsPage />} />
             <Route path="*" element={<Navigate to="/todos" replace />} />
           </Routes>
