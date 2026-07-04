@@ -49,21 +49,21 @@ Drizzle ORM · better-sqlite3-multiple-ciphers (SQLCipher) · Zustand.
 
 ```bash
 # 1. Install dependencies (also rebuilds the native SQLite module for Electron)
-npm install
+pnpm install
 
 # 2. Launch the app with hot reload for development
-npm run dev
+pnpm dev
 
 # 3. Typecheck + production build
-npm run build
+pnpm build
 
 # 4. Package a macOS .dmg (unsigned — for local use)
-npm run build:mac
+pnpm build:mac
 ```
 
 > **Native module note:** `better-sqlite3-multiple-ciphers` must be rebuilt against
 > Electron's ABI. The `postinstall` hook (`electron-builder install-app-deps`) handles this
-> automatically after `npm install`.
+> automatically after `pnpm install`.
 
 ### First-run walkthrough
 
@@ -154,7 +154,7 @@ no reset. Keep your password somewhere safe.
 
 ## Packaging
 
-`npm run build:mac` produces an **unsigned** `.dmg` at `dist/Kouign Assistant-<version>-arm64.dmg`
+`pnpm build:mac` produces an **unsigned** `.dmg` at `dist/Kouign Assistant-<version>-arm64.dmg`
 (or `-x64.dmg` on Intel). The filename embeds the version and architecture.
 
 - Code signing and notarization are release follow-ups (require an Apple Developer account).

@@ -48,19 +48,23 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.9.0
+
       - uses: actions/setup-node@v4
         with:
           node-version: 24
-          cache: npm
+          cache: pnpm
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - name: Build app
-        run: npm run build
+        run: pnpm run build
 
       - name: Package installer
-        run: npx electron-builder ${{ matrix.args }} --publish never
+        run: pnpm exec electron-builder ${{ matrix.args }} --publish never
 
       - name: Upload artifacts to GitHub Release (draft)
         uses: softprops/action-gh-release@v2

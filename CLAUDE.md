@@ -81,10 +81,10 @@ kouign-assistant/
 ## Commands (once implemented)
 
 ```bash
-npm install        # install deps + rebuild native module for Electron (postinstall)
-npm run dev        # launch app with HMR
-npm run build      # typecheck + build
-npm run build:mac  # produce a macOS .dmg
+pnpm install       # install deps + rebuild native module for Electron (postinstall)
+pnpm dev           # launch app with HMR
+pnpm build         # typecheck + build
+pnpm build:mac     # produce a macOS .dmg
 ```
 
 > Native module note: `better-sqlite3-multiple-ciphers` must be rebuilt against Electron's

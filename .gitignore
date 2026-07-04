@@ -5,3 +5,4 @@ dist/
 *.kouigndb
 .DS_Store
 *.local
+package-lock.json
