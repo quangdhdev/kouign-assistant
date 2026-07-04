@@ -3,6 +3,9 @@
   "version": "0.1.0",
   "description": "Private, offline-first personal assistant for macOS",
   "main": "out/main/index.js",
+  "engines": {
+    "node": ">=24"
+  },
   "scripts": {
     "dev": "electron-vite dev",
     "build": "tsc -p tsconfig.node.json && tsc -p tsconfig.web.json && electron-vite build",
@@ -14,7 +17,7 @@
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.3.2",
-    "@types/node": "^22.0.0",
+    "@types/node": "^24.0.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "@typescript-eslint/eslint-plugin": "^8.0.0",
