@@ -10,7 +10,7 @@ files:
 artifactName: ${productName}-${version}-${arch}.${ext}
 mac:
   category: public.app-category.productivity
-  target: dmg              # each runner builds its NATIVE arch (arm64 on macos-14, x64 on macos-13)
+  target: dmg              # runner builds its NATIVE arch (arm64 on macos-14)
   icon: build/icon.icns
   hardenedRuntime: true
   identity: null           # unsigned — signing is a later phase
@@ -23,3 +23,7 @@ nsis:
   oneClick: false
   perMachine: false
   allowToChangeInstallationDirectory: true
+linux:
+  target: AppImage        # single portable executable — no install/root required
+  category: Utility
+  icon: build/icon.png     # electron-builder generates the icon set from this PNG

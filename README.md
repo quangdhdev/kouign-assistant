@@ -14,8 +14,8 @@ syncs across your Macs — always encrypted at rest.
 | Platform | Installer |
 |----------|-----------|
 | macOS Apple Silicon | `Kouign Assistant-<version>-arm64.dmg` |
-| macOS Intel x64 | `Kouign Assistant-<version>-x64.dmg` |
 | Windows x64 | `Kouign Assistant-<version>-x64.exe` |
+| Linux x64 | `Kouign Assistant-<version>-x64.AppImage` |
 
 Landing page: **[quangdhdev.github.io/kouign-assistant](https://quangdhdev.github.io/kouign-assistant/)**
 
@@ -111,6 +111,12 @@ click **"Open Anyway"** next to the Kouign Assistant entry.
 2. Click **More info**.
 3. Click **Run anyway**.
 
+### Linux — AppImage
+
+1. Download the `.AppImage` file.
+2. Make it executable: `chmod +x "Kouign Assistant-<version>-x64.AppImage"`.
+3. Run it directly — no install step, no root required.
+
 Code signing and notarization are planned for a future release.
 
 ## Releasing
@@ -125,7 +131,7 @@ git push origin v0.1.0
 
 The `release.yml` CI workflow will:
 1. Verify the tag matches `package.json` version (fails fast if they disagree).
-2. Build macOS arm64 (Apple Silicon), macOS x64 (Intel), and Windows NSIS installers in parallel.
+2. Build macOS arm64 (Apple Silicon), Windows NSIS, and Linux AppImage installers in parallel.
 3. Publish a GitHub Release with all three installers attached.
 
 ## Screenshots

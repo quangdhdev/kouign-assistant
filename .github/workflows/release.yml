@@ -38,12 +38,12 @@ jobs:
           - name: macOS arm64
             os: macos-14
             args: --mac
-          - name: macOS x64
-            os: macos-13
-            args: --mac
           - name: Windows x64
             os: windows-latest
             args: --win
+          - name: Linux x64
+            os: ubuntu-latest
+            args: --linux
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
@@ -75,6 +75,7 @@ jobs:
           files: |
             dist/*.dmg
             dist/*.exe
+            dist/*.AppImage
             dist/*.blockmap
 
   publish:
