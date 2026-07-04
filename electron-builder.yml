@@ -10,9 +10,7 @@ files:
 artifactName: ${productName}-${version}-${arch}.${ext}
 mac:
   category: public.app-category.productivity
-  target:
-    - target: dmg
-      arch: [default]      # each runner builds its NATIVE arch (arm64 on macos-14, x64 on macos-13)
+  target: dmg              # each runner builds its NATIVE arch (arm64 on macos-14, x64 on macos-13)
   icon: build/icon.icns
   hardenedRuntime: true
   identity: null           # unsigned — signing is a later phase
