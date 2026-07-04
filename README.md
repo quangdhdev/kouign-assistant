@@ -7,6 +7,20 @@ single **encrypted SQLite datasource**. Choose (or create) your datasource when 
 starts, protect it with a password, and optionally keep the file in **iCloud Drive** so it
 syncs across your Macs — always encrypted at rest.
 
+## Download
+
+**[Download the latest release →](https://github.com/quangdhdev/kouign-assistant/releases/latest)**
+
+| Platform | Installer |
+|----------|-----------|
+| macOS Apple Silicon | `Kouign Assistant-<version>-arm64.dmg` |
+| macOS Intel x64 | `Kouign Assistant-<version>-x64.dmg` |
+| Windows x64 | `Kouign Assistant-<version>-x64.exe` |
+
+Landing page: **[quangdhdev.github.io/kouign-assistant](https://quangdhdev.github.io/kouign-assistant/)**
+
+> **Unsigned build:** the installers are not code-signed. See [First launch](#first-launch--unsigned-build) below.
+
 ## Features (MVP)
 
 - **Todos** — manage personal and company tasks with status, priority, due dates, and
@@ -77,6 +91,43 @@ npm run build:mac
 | ⌘, | Open Settings |
 | Esc | Close dialog / search palette |
 
+## First launch — unsigned build
+
+The distributed installers are **unsigned** (no Apple Developer certificate, no Windows
+Authenticode). Your OS will warn you on first launch — this is expected.
+
+### macOS — Gatekeeper
+
+1. Open **Finder** and locate `Kouign Assistant.app` (or mount the `.dmg`).
+2. **Right-click** (or Control-click) the app → **Open**.
+3. Click **Open** in the Gatekeeper dialog that appears.
+
+Alternatively: **System Settings → Privacy & Security** → scroll down →
+click **"Open Anyway"** next to the Kouign Assistant entry.
+
+### Windows — SmartScreen
+
+1. Run the `.exe` installer; SmartScreen will show a blue warning.
+2. Click **More info**.
+3. Click **Run anyway**.
+
+Code signing and notarization are planned for a future release.
+
+## Releasing
+
+To publish a new release, bump the version in `package.json`, commit, and push a version tag:
+
+```bash
+# Ensure package.json "version" matches the tag you're about to push
+git tag v0.1.0
+git push origin v0.1.0
+```
+
+The `release.yml` CI workflow will:
+1. Verify the tag matches `package.json` version (fails fast if they disagree).
+2. Build macOS arm64 (Apple Silicon), macOS x64 (Intel), and Windows NSIS installers in parallel.
+3. Publish a GitHub Release with all three installers attached.
+
 ## Screenshots
 
 <!-- TODO: Capture real screenshots after first stable build. -->
@@ -103,11 +154,13 @@ no reset. Keep your password somewhere safe.
 
 ## Packaging
 
-`npm run build:mac` produces an **unsigned** `.dmg` at `dist/Kouign Assistant.dmg`.
+`npm run build:mac` produces an **unsigned** `.dmg` at `dist/Kouign Assistant-<version>-arm64.dmg`
+(or `-x64.dmg` on Intel). The filename embeds the version and architecture.
 
 - Code signing and notarization are release follow-ups (require an Apple Developer account).
-- The `.dmg` can be opened locally without signing on your own Mac after allowing it in
-  System Settings > Privacy & Security.
+- The `.dmg` can be opened locally without signing on your own Mac — see
+  [First launch](#first-launch--unsigned-build) above.
+- To enable the GitHub Pages landing page: **Settings → Pages → Source = `gh-pages` branch, `/ (root)`**.
 
 ## App icon
 
