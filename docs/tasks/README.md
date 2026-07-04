@@ -21,6 +21,7 @@ contracts (TypeScript types, SQL DDL, IPC signatures) and acceptance criteria.
 | [phase-4-notes.md](./phase-4-notes.md) | 4 | Notes IPC + store, master–detail page, editor w/ autosave, daily notes, bookmarks |
 | [phase-4.5-search.md](./phase-4.5-search.md) | 4.5 | FTS5 tables + triggers, searchRepo, search IPC, global search UI |
 | [phase-5-polish-package.md](./phase-5-polish-package.md) | 5 | Empty/loading/toast states, shortcuts, dark mode, icon + `.dmg`, README |
+| [phase-6-ci-release-landing.md](./phase-6-ci-release-landing.md) | 6 | Tag-triggered release CI (mac arm64/x64 + Windows NSIS), GitHub Release, static landing page on `gh-pages` |
 
 ## Build order & dependency chain
 
@@ -32,13 +33,16 @@ contracts (TypeScript types, SQL DDL, IPC signatures) and acceptance criteria.
       └─ 4 (notes)        ┘ (independent feature slices over the same contract)
          └─ 4.5 (search)   ← needs tasks + notes tables, repos, and UI to jump into
             └─ 5 (polish & package)
+               └─ 6 (release CI + landing page)   ← ships what 5 built to the public
 ```
 
 - **0 → 1 → 2** are strictly sequential (each builds on the prior layer).
 - **3 and 4** can be built in parallel after 2 — they touch disjoint feature folders over the
   shared contract fixed in Phase 2.
 - **4.5** depends on both 3 and 4 (search spans tasks + notes and jumps into their views).
-- **5** is last (polish, dark-mode toggle, packaging).
+- **5** produces the local packaging (polish, dark-mode toggle, `.dmg`).
+- **6** takes 5's packaging public: tag-triggered CI builds macOS + Windows installers, cuts a
+  GitHub Release, and deploys a landing page — no app-code changes, docs/CI/site only.
 
 ## Locked decisions honored across specs
 

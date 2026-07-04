@@ -80,6 +80,18 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done
 - [x] README quick start + first-run screenshots <!-- quick start done; real screenshots pending a GUI session (placeholder icon too) -->
 
 
+## Phase 6 — Release CI & landing page
+
+<!-- Spec: docs/tasks/phase-6-ci-release-landing.md — documented, not yet implemented -->
+
+- [ ] `electron-builder.yml` — add Windows NSIS target, per-runner mac `arch: [default]`, `nsis` block, `artifactName` (keep `identity: null` / `hardenedRuntime`)
+- [ ] `.github/workflows/release.yml` — `v*.*.*` tag → `version-check` → 3-target build matrix (macos-14 arm64, macos-13 x64, windows-latest) → publish GitHub Release
+- [ ] `.github/workflows/ci.yml` — push/PR guardrail: typecheck + lint + build (no packaging)
+- [ ] `site/index.html` — single static landing page (Tailwind CDN, app tokens): hero + download buttons, features, security callout, screenshots placeholder, footer; dynamic latest-release fetch with `/releases/latest` fallback
+- [ ] `.github/workflows/pages.yml` — deploy `site/` to `gh-pages`; document the one-time Settings → Pages step
+- [ ] Docs — Download / Releasing / Gatekeeper + SmartScreen notes in README
+
+
 ---
 
 ## Backlog / post-MVP ideas
