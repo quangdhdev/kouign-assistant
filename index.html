@@ -123,15 +123,15 @@
           <span id="btn-mac-arm-label" class="text-xs opacity-75">(Apple Silicon)</span>
         </a>
 
-        <!-- macOS Intel -->
-        <a id="btn-mac-x64"
+        <!-- Linux -->
+        <a id="btn-linux"
            href="https://github.com/quangdhdev/kouign-assistant/releases/latest"
            class="btn-secondary">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
+            <path d="M12.5 2c-.9 0-1.7.6-2 1.4-.3.9-.2 2 .2 3.1-1 .4-1.9 1.1-2.4 2-.6 1-.8 2.2-.6 3.3-.7.3-1.3.9-1.6 1.7-.4 1-.3 2.2.4 3.3.1 1 .6 1.9 1.5 2.5.6.4 1.3.6 2 .6.3.5.8.9 1.4 1.1.9.3 1.9.1 2.6-.4.7.5 1.7.7 2.6.4.6-.2 1.1-.6 1.4-1.1.7 0 1.4-.2 2-.6.9-.6 1.4-1.5 1.5-2.5.7-1.1.8-2.3.4-3.3-.3-.8-.9-1.4-1.6-1.7.2-1.1 0-2.3-.6-3.3-.5-.9-1.4-1.6-2.4-2 .4-1.1.5-2.2.2-3.1-.3-.8-1.1-1.4-2-1.4-.6 0-1.1.3-1.5.7-.4-.4-.9-.7-1.5-.7z"/>
           </svg>
-          Download for macOS
-          <span class="text-xs opacity-75">(Intel)</span>
+          Download for Linux
+          <span class="text-xs opacity-75">(AppImage)</span>
         </a>
 
         <!-- Windows -->
@@ -146,7 +146,7 @@
       </div>
 
       <p class="text-xs text-text-muted">
-        macOS 12+ · Windows 10/11 · Free &amp; open source ·
+        macOS 12+ (Apple Silicon) · Windows 10/11 · Linux (AppImage) · Free &amp; open source ·
         <a href="https://github.com/quangdhdev/kouign-assistant/releases"
            class="underline hover:text-brand">All releases ↗</a>
       </p>
@@ -269,7 +269,7 @@
           you on first launch — this is expected. Follow the steps below to allow it.
         </p>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <div>
             <h4 class="font-semibold text-text-primary text-sm mb-2">macOS — Gatekeeper</h4>
             <ol class="text-sm text-text-muted space-y-1 list-decimal list-inside">
@@ -292,6 +292,19 @@
             </ol>
             <p class="text-xs text-text-muted mt-2">
               Code signing and notarization are planned for a future release.
+            </p>
+          </div>
+
+          <div>
+            <h4 class="font-semibold text-text-primary text-sm mb-2">Linux — AppImage</h4>
+            <ol class="text-sm text-text-muted space-y-1 list-decimal list-inside">
+              <li>Download the <code class="bg-canvas px-1 rounded text-xs">.AppImage</code> file</li>
+              <li>Make it executable: <code class="bg-canvas px-1 rounded text-xs">chmod +x Kouign*.AppImage</code></li>
+              <li>Run it directly — no install required</li>
+            </ol>
+            <p class="text-xs text-text-muted mt-2">
+              No Gatekeeper/SmartScreen-style warning applies; some file managers show a
+              "make executable" prompt instead of a terminal step.
             </p>
           </div>
         </div>
@@ -359,7 +372,7 @@
       const FALLBACK = 'https://github.com/' + REPO + '/releases/latest';
 
       const btnMacArm = document.getElementById('btn-mac-arm');
-      const btnMacX64 = document.getElementById('btn-mac-x64');
+      const btnLinux  = document.getElementById('btn-linux');
       const btnWin    = document.getElementById('btn-win');
       const badge     = document.getElementById('version-badge');
 
@@ -379,9 +392,9 @@
 
           // Map suffix → button
           var map = [
-            { suffix: '-arm64.dmg', btn: btnMacArm },
-            { suffix: '-x64.dmg',   btn: btnMacX64 },
-            { suffix: '-x64.exe',   btn: btnWin    },
+            { suffix: '-arm64.dmg',     btn: btnMacArm },
+            { suffix: '-x64.AppImage', btn: btnLinux  },
+            { suffix: '-x64.exe',       btn: btnWin    },
           ];
 
           map.forEach(function (entry) {
@@ -396,7 +409,7 @@
         .catch(function () {
           // No release yet or API failed — keep static fallback hrefs; show "Coming soon"
           badge.textContent = 'Coming soon';
-          [btnMacArm, btnMacX64, btnWin].forEach(function (btn) {
+          [btnMacArm, btnLinux, btnWin].forEach(function (btn) {
             btn.href = FALLBACK;
           });
         });
