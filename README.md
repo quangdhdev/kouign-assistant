@@ -105,6 +105,22 @@ Authenticode). Your OS will warn you on first launch — this is expected.
 Alternatively: **System Settings → Privacy & Security** → scroll down →
 click **"Open Anyway"** next to the Kouign Assistant entry.
 
+**If macOS says the app is "damaged and can't be opened" (ad hoc fix):**
+
+This happens on Apple Silicon when the download is quarantined. Move the app to
+`/Applications`, then run in Terminal:
+
+```bash
+# 1. Remove the quarantine flag
+xattr -cr "/Applications/Kouign Assistant.app"
+
+# 2. Give it a local ad hoc signature
+codesign --force --deep --sign - "/Applications/Kouign Assistant.app"
+```
+
+Then open the app normally. (The `-` in `--sign -` means "ad hoc" — a signature valid only
+on this Mac; no Apple certificate involved.)
+
 ### Windows — SmartScreen
 
 1. Run the `.exe` installer; SmartScreen will show a blue warning.
