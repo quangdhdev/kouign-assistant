@@ -16,7 +16,7 @@
  */
 
 import React, { useEffect, useRef, useState } from 'react'
-import { Plus, ExternalLink, MoreHorizontal, Pencil, Trash2 } from 'lucide-react'
+import { Plus, ExternalLink, MoreHorizontal, Pencil, Trash2, List, LayoutGrid } from 'lucide-react'
 import type { Task, TaskStatus, TaskCategory } from '@shared/types'
 import { useTasksStore } from '@/store/tasks'
 import { useUiStore } from '@/store/ui'
@@ -35,6 +35,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import TaskDialog from './TaskDialog'
+import TodosBoard from './TodosBoard'
 import {
   STATUS_LABEL,
   STATUS_BADGE_VARIANT,
@@ -42,6 +43,18 @@ import {
   PRIORITY_LABEL,
   CATEGORY_LABEL,
 } from './meta'
+
+// ---------------------------------------------------------------------------
+// View toggle (List / Board) — persisted in localStorage
+// ---------------------------------------------------------------------------
+
+type TodosView = 'list' | 'board'
+
+const VIEW_KEY = 'kouign.todos.view'
+
+function readStoredView(): TodosView {
+  return localStorage.getItem(VIEW_KEY) === 'board' ? 'board' : 'list'
+}
 
 // ---------------------------------------------------------------------------
 // Pill filter helpers
@@ -72,7 +85,7 @@ function Pill({ active, onClick, children }: PillProps): React.ReactElement {
 // Confirm-delete state
 // ---------------------------------------------------------------------------
 
-function useConfirmDelete() {
+export function useConfirmDelete() {
   const [pendingId, setPendingId] = useState<number | null>(null)
   return {
     pendingId,
@@ -86,12 +99,12 @@ function useConfirmDelete() {
 // Jira / Slack chip
 // ---------------------------------------------------------------------------
 
-interface LinkChipProps {
+export interface LinkChipProps {
   label: string
   url: string
 }
 
-function LinkChip({ label, url }: LinkChipProps): React.ReactElement {
+export function LinkChip({ label, url }: LinkChipProps): React.ReactElement {
   function handleClick(e: React.MouseEvent): void {
     e.stopPropagation()
     window.api.shell.openExternal(url)
@@ -277,6 +290,12 @@ export default function TodosPage(): React.ReactElement {
   const [editingTask, setEditingTask] = useState<Task | null>(null)
   const confirmDelete = useConfirmDelete()
 
+  // View toggle (List / Board) — read synchronously so there's no flash on load.
+  const [view, setView] = useState<TodosView>(readStoredView)
+  useEffect(() => {
+    localStorage.setItem(VIEW_KEY, view)
+  }, [view])
+
   // Load tasks on mount
   useEffect(() => {
     load().catch(e => toast(e instanceof Error ? e.message : 'Failed to load tasks', 'error'))
@@ -339,10 +358,44 @@ export default function TodosPage(): React.ReactElement {
       {/* Header */}
       <div className="flex items-center justify-between px-6 pt-5 pb-3 flex-shrink-0">
         <h1 className="text-lg font-semibold text-foreground">Todos</h1>
-        <Button size="sm" onClick={openCreate} className="gap-1.5">
-          <Plus className="h-4 w-4" />
-          New task
-        </Button>
+        <div className="flex items-center gap-2">
+          {/* List / Board view toggle */}
+          <div className="flex items-center bg-secondary rounded-md p-0.5">
+            <button
+              onClick={() => setView('list')}
+              title="List view"
+              aria-label="List view"
+              aria-pressed={view === 'list'}
+              className={`flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-medium transition-colors ${
+                view === 'list'
+                  ? 'bg-accent text-accent-foreground'
+                  : 'text-secondary-foreground hover:bg-muted'
+              }`}
+            >
+              <List className="h-3.5 w-3.5" />
+              List
+            </button>
+            <button
+              onClick={() => setView('board')}
+              title="Board view"
+              aria-label="Board view"
+              aria-pressed={view === 'board'}
+              className={`flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-medium transition-colors ${
+                view === 'board'
+                  ? 'bg-accent text-accent-foreground'
+                  : 'text-secondary-foreground hover:bg-muted'
+              }`}
+            >
+              <LayoutGrid className="h-3.5 w-3.5" />
+              Board
+            </button>
+          </div>
+
+          <Button size="sm" onClick={openCreate} className="gap-1.5">
+            <Plus className="h-4 w-4" />
+            New task
+          </Button>
+        </div>
       </div>
 
       {/* Filter pills */}
@@ -357,52 +410,64 @@ export default function TodosPage(): React.ReactElement {
           </div>
         </div>
 
-        {/* Status pills */}
-        <div className="flex items-center gap-2">
-          <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground w-16 flex-shrink-0">Status</span>
-          <div className="flex gap-1.5 flex-wrap">
-            <Pill active={activeStatus === null} onClick={() => handleStatusFilter(null)}>All</Pill>
-            <Pill active={activeStatus === 'todo'} onClick={() => handleStatusFilter('todo')}>{STATUS_LABEL.todo}</Pill>
-            <Pill active={activeStatus === 'in_progress'} onClick={() => handleStatusFilter('in_progress')}>{STATUS_LABEL.in_progress}</Pill>
-            <Pill active={activeStatus === 'done'} onClick={() => handleStatusFilter('done')}>{STATUS_LABEL.done}</Pill>
-          </div>
-        </div>
-      </div>
-
-      {/* Task list */}
-      <div className="flex-1 overflow-y-auto px-2">
-        {loading ? (
-          <div className="flex items-center justify-center h-32 text-muted-foreground text-sm">
-            Loading…
-          </div>
-        ) : tasks.length === 0 ? (
-          /* Empty state */
-          <div className="flex flex-col items-center justify-center h-48 text-center px-6">
-            <p className="text-sm font-medium text-foreground mb-1">No tasks here</p>
-            <p className="text-xs text-muted-foreground mb-4">
-              {activeCategory !== null || activeStatus !== null
-                ? 'Try clearing the filters, or create a new task.'
-                : 'Create your first task to get started.'}
-            </p>
-            <Button size="sm" variant="outline" onClick={openCreate} className="gap-1.5">
-              <Plus className="h-4 w-4" />
-              New task
-            </Button>
-          </div>
-        ) : (
-          <div className="bg-card rounded-[var(--radius-card)] border border-border overflow-hidden">
-            {tasks.map(task => (
-              <TaskRow
-                key={task.id}
-                task={task}
-                onEdit={openEdit}
-                onDelete={handleDelete}
-                confirmDelete={confirmDelete}
-              />
-            ))}
+        {/* Status pills — hidden in Board view: columns represent status */}
+        {view === 'list' && (
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground w-16 flex-shrink-0">Status</span>
+            <div className="flex gap-1.5 flex-wrap">
+              <Pill active={activeStatus === null} onClick={() => handleStatusFilter(null)}>All</Pill>
+              <Pill active={activeStatus === 'todo'} onClick={() => handleStatusFilter('todo')}>{STATUS_LABEL.todo}</Pill>
+              <Pill active={activeStatus === 'in_progress'} onClick={() => handleStatusFilter('in_progress')}>{STATUS_LABEL.in_progress}</Pill>
+              <Pill active={activeStatus === 'done'} onClick={() => handleStatusFilter('done')}>{STATUS_LABEL.done}</Pill>
+            </div>
           </div>
         )}
       </div>
+
+      {/* Task list / board */}
+      {loading ? (
+        <div className="flex items-center justify-center h-32 text-muted-foreground text-sm">
+          Loading…
+        </div>
+      ) : view === 'board' ? (
+        <TodosBoard
+          tasks={tasks}
+          onEdit={openEdit}
+          onDelete={handleDelete}
+          confirmDelete={confirmDelete}
+          onCreate={openCreate}
+        />
+      ) : (
+        <div className="flex-1 overflow-y-auto px-2">
+          {tasks.length === 0 ? (
+            /* Empty state */
+            <div className="flex flex-col items-center justify-center h-48 text-center px-6">
+              <p className="text-sm font-medium text-foreground mb-1">No tasks here</p>
+              <p className="text-xs text-muted-foreground mb-4">
+                {activeCategory !== null || activeStatus !== null
+                  ? 'Try clearing the filters, or create a new task.'
+                  : 'Create your first task to get started.'}
+              </p>
+              <Button size="sm" variant="outline" onClick={openCreate} className="gap-1.5">
+                <Plus className="h-4 w-4" />
+                New task
+              </Button>
+            </div>
+          ) : (
+            <div className="bg-card rounded-[var(--radius-card)] border border-border overflow-hidden">
+              {tasks.map(task => (
+                <TaskRow
+                  key={task.id}
+                  task={task}
+                  onEdit={openEdit}
+                  onDelete={handleDelete}
+                  confirmDelete={confirmDelete}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Create / Edit dialog */}
       <TaskDialog
