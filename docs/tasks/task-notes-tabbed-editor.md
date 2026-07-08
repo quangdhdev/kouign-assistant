@@ -1,6 +1,16 @@
 # Task: Tabbed Notes editor with first-line headers
 
-> **Owner:** coder sub-agent (model: sonnet) · **Status:** ready
+> **Owner:** coder sub-agent (model: sonnet) · **Status:** done
+>
+> **Shipped deviations from this spec** (per product feedback during manual test):
+> - The bookmark **URL field was removed**. Bookmarks now edit exactly like Daily notes
+>   (title `Input` + free-text markdown body, no dedicated URL input) — links just go in the
+>   body, Notion-style. The "New bookmark" option and the Bookmarks filter pill are unchanged.
+> - The editor canvas (toolbar, title/header, body) always renders on a **fixed white
+>   surface**, regardless of the app's light/dark theme (Notion-style paper), overriding the
+>   normal design-token-driven theming for that component only.
+> - Everything else (tab strip, first-line header for plain notes, tab/type-filter
+>   interaction, persistence) shipped as specified below.
 > **Depends on:** nothing — builds on shipped MVP (Phase 4 Notes: `useNotesStore`, `window.api.notes.*`, `NotesPage`, `NoteEditor`)
 > **Read first:** [ARCHITECTURE.md](../../ARCHITECTURE.md) §4 (Notes data model / FTS), §6 (IPC surface);
 > [DESIGN_SYSTEM.md](../../DESIGN_SYSTEM.md) §5 (Input/Textarea/Button), §6 (Notes view pattern)
@@ -88,18 +98,18 @@ repo.
   search-palette jump-to (it calls `select`).
 
 ## Acceptance criteria
-- [ ] Clicking notes opens each as a tab; multiple tabs stay open; switching tabs shows the right
+- [x] Clicking notes opens each as a tab; multiple tabs stay open; switching tabs shows the right
       note; `×` closes a tab and activates a neighbor.
-- [ ] For a plain note, the first line is the header (no separate title field); editing the first
+- [x] For a plain note, the first line is the header (no separate title field); editing the first
       line updates the tab label and the sidebar list title.
-- [ ] The DB `title` stays in sync (search finds the note by its first-line text; reopening shows
+- [x] The DB `title` stays in sync (search finds the note by its first-line text; reopening shows
       the same title).
-- [ ] Daily notes and bookmarks still show their title field (and bookmarks their URL) —
-      unchanged.
-- [ ] Open tabs + active tab **persist across quit/relaunch and lock/unlock**, scoped per
+- [x] Daily notes still show their title field. **Deviation:** bookmarks also show a title field
+      but no longer have a dedicated URL field (removed per feedback — see note above).
+- [x] Open tabs + active tab **persist across quit/relaunch and lock/unlock**, scoped per
       datasource; deleted notes don't reappear as tabs.
-- [ ] Type tabs (All/Notes/Daily/Bookmarks) filter the sidebar without closing open tabs.
-- [ ] `npm run lint` / `npm run build` exit 0.
+- [x] Type tabs (All/Notes/Daily/Bookmarks) filter the sidebar without closing open tabs.
+- [x] `npm run lint` / `npm run build` exit 0.
 
 ## Verification
 ```bash

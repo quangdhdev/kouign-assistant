@@ -181,11 +181,10 @@ export default function SearchPalette({ open, onClose }: SearchPaletteProps): Re
       loadTasks().catch(() => {})
       navigate('/todos')
     } else {
-      // Navigate to notes and select the note.
-      // setFilter({}) clears the type filter so the note is always visible.
+      // Navigate to notes and open the note as a tab.
+      // setFilter({}) clears the sidebar's type filter so the note is visible in the list too.
       setNotesFilter({})
-        .then(() => selectNote(result.note.id))
-        .catch(() => {})
+      selectNote(result.note.id)
       navigate('/notes')
     }
   }, [onClose, setOpenEditId, loadTasks, navigate, setNotesFilter, selectNote])

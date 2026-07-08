@@ -1,22 +1,24 @@
 /**
- * NotesPage.tsx — Master–detail Notes feature page.
+ * NotesPage.tsx — Tabbed Notes feature page.
  *
  * Layout (DESIGN_SYSTEM §6):
  *   Left panel (256px):
  *     - Header: "Notes" title + New dropdown (New note / New daily note / New bookmark)
- *     - Type tabs: All / Notes / Daily / Bookmarks — drives store.setFilter
- *     - Scrollable note list with pin indicator on rows; selected row highlighted
+ *     - Type tabs: All / Notes / Daily / Bookmarks — client-side display filter for the
+ *       sidebar list only; does not affect which tabs are open
+ *     - Scrollable note list (filtered) with pin indicator on rows; rows whose note is an
+ *       open tab are highlighted, the active tab most strongly
  *   Right panel (flex-1):
- *     - NoteEditor for the selected note, or an empty state
+ *     - Tab strip: one tab per open note (title + close ×); clicking a tab activates it
+ *     - NoteEditor for the active tab's note, or an empty state when no tabs are open
  *
  * Daily note quick-create: creates a 'daily' note titled yyyy-mm-dd for today.
- * If one already exists for today, selects it instead of creating a duplicate.
+ * If one already exists for today, opens it as a tab instead of creating a duplicate.
  */
 
 import React, { useEffect, useRef } from 'react'
-import { Plus, Pin, FileText, BookOpen, Bookmark, ChevronDown } from 'lucide-react'
-import type { NoteType } from '@shared/types'
-import type { Note } from '@shared/types'
+import { Plus, Pin, FileText, BookOpen, Bookmark, ChevronDown, X } from 'lucide-react'
+import type { NoteType, Note } from '@shared/types'
 import { useNotesStore } from '@/store/notes'
 import { useUiStore } from '@/store/ui'
 import { useToast } from '@/components/ToastProvider'
@@ -44,7 +46,7 @@ function todayIso(): string {
 }
 
 // ---------------------------------------------------------------------------
-// Type tabs config
+// Type tabs config (sidebar display filter)
 // ---------------------------------------------------------------------------
 
 interface TypeTabConfig {
@@ -65,25 +67,28 @@ const TYPE_TABS: TypeTabConfig[] = [
 
 interface NoteListItemProps {
   note: Note
-  selected: boolean
+  open: boolean
+  active: boolean
   onClick: () => void
 }
 
-function NoteListItem({ note, selected, onClick }: NoteListItemProps): React.ReactElement {
+function NoteListItem({ note, open, active, onClick }: NoteListItemProps): React.ReactElement {
   return (
     <button
       onClick={onClick}
       className={`w-full text-left px-3 py-2.5 border-b border-border last:border-b-0 transition-colors ${
-        selected
+        active
           ? 'bg-accent text-accent-foreground'
-          : 'hover:bg-muted/60 text-foreground'
+          : open
+            ? 'bg-secondary text-foreground'
+            : 'hover:bg-muted/60 text-foreground'
       }`}
     >
       <div className="flex items-start gap-1.5">
         {/* Pin indicator */}
         {note.pinned && (
           <Pin
-            className={`h-3 w-3 flex-shrink-0 mt-1 ${selected ? 'text-accent-foreground' : 'text-primary'}`}
+            className={`h-3 w-3 flex-shrink-0 mt-1 ${active ? 'text-accent-foreground' : 'text-primary'}`}
           />
         )}
 
@@ -93,10 +98,10 @@ function NoteListItem({ note, selected, onClick }: NoteListItemProps): React.Rea
             {note.title || 'Untitled'}
           </p>
           <div className="flex items-center gap-2 mt-0.5">
-            <span className={`text-xs capitalize ${selected ? 'text-accent-foreground/70' : 'text-muted-foreground'}`}>
+            <span className={`text-xs capitalize ${active ? 'text-accent-foreground/70' : 'text-muted-foreground'}`}>
               {note.type}
             </span>
-            <span className={`text-xs ${selected ? 'text-accent-foreground/60' : 'text-muted-foreground'}`}>
+            <span className={`text-xs ${active ? 'text-accent-foreground/60' : 'text-muted-foreground'}`}>
               {note.updatedAt.split('T')[0]}
             </span>
           </div>
@@ -107,15 +112,59 @@ function NoteListItem({ note, selected, onClick }: NoteListItemProps): React.Rea
 }
 
 // ---------------------------------------------------------------------------
-// Empty state (no note selected)
+// Tab strip
+// ---------------------------------------------------------------------------
+
+interface NoteTabProps {
+  note: Note
+  active: boolean
+  onActivate: () => void
+  onClose: () => void
+}
+
+function NoteTab({ note, active, onActivate, onClose }: NoteTabProps): React.ReactElement {
+  const label = note.title || 'Untitled'
+
+  function handleClose(e: React.MouseEvent): void {
+    e.stopPropagation()
+    onClose()
+  }
+
+  return (
+    <button
+      onClick={onActivate}
+      title={label}
+      className={`flex items-center gap-1.5 pl-3 pr-2 py-2 text-xs font-medium border-r border-border whitespace-nowrap transition-colors flex-shrink-0 ${
+        active
+          ? 'bg-accent text-accent-foreground'
+          : 'text-muted-foreground hover:bg-secondary'
+      }`}
+    >
+      <span className="max-w-[140px] truncate">{label}</span>
+      <span
+        role="button"
+        tabIndex={-1}
+        onClick={handleClose}
+        aria-label={`Close ${label}`}
+        title={`Close ${label}`}
+        className="flex items-center justify-center h-4 w-4 rounded hover:bg-muted/80 flex-shrink-0"
+      >
+        <X className="h-3 w-3" />
+      </span>
+    </button>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// Empty state (no tabs open)
 // ---------------------------------------------------------------------------
 
 function EmptyState({ onNew }: { onNew: () => void }): React.ReactElement {
   return (
-    <div className="flex flex-col items-center justify-center h-full text-center px-8">
-      <FileText className="h-10 w-10 text-muted-foreground mb-3 opacity-40" />
-      <p className="text-sm font-medium text-foreground mb-1">No note selected</p>
-      <p className="text-xs text-muted-foreground mb-4">
+    <div className="flex flex-col items-center justify-center h-full text-center px-8 bg-white">
+      <FileText className="h-10 w-10 text-neutral-400 mb-3 opacity-40" />
+      <p className="text-sm font-medium text-neutral-900 mb-1">No note open</p>
+      <p className="text-xs text-neutral-500 mb-4">
         Select a note from the list or create a new one.
       </p>
       <Button size="sm" variant="outline" onClick={onNew} className="gap-1.5">
@@ -132,7 +181,19 @@ function EmptyState({ onNew }: { onNew: () => void }): React.ReactElement {
 
 export default function NotesPage(): React.ReactElement {
   const { toast } = useToast()
-  const { notes, filter, selectedId, loading, load, setFilter, select, create } = useNotesStore()
+  const {
+    notes,
+    filter,
+    openTabIds,
+    activeTabId,
+    loading,
+    load,
+    setFilter,
+    select,
+    setActiveTab,
+    closeTab,
+    create,
+  } = useNotesStore()
   const newNoteSeq = useUiStore((s) => s.newNoteSeq)
 
   // Derive the active tab type from the current store filter
@@ -152,14 +213,16 @@ export default function NotesPage(): React.ReactElement {
   }, [newNoteSeq]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // ---------------------------------------------------------------------------
-  // Tab change
+  // Sidebar type filter (client-side; does not affect open tabs)
   // ---------------------------------------------------------------------------
 
   function handleTabChange(type: NoteType | undefined): void {
-    setFilter(type !== undefined ? { type } : {}).catch(
-      e => toast(e instanceof Error ? e.message : 'Failed to filter notes', 'error')
-    )
+    setFilter(type !== undefined ? { type } : {})
   }
+
+  const visibleNotes = activeTabType === undefined
+    ? notes
+    : notes.filter(n => n.type === activeTabType)
 
   // ---------------------------------------------------------------------------
   // New note actions
@@ -172,21 +235,12 @@ export default function NotesPage(): React.ReactElement {
   function handleNewDailyNote(): void {
     const today = todayIso()
 
-    // If a daily note for today already exists anywhere in the loaded list
-    // (search across all types, not just the current filter), select it.
-    // We load all notes to detect duplicates: use the store's full list which
-    // may be filtered. To be safe, we reload without filter or just search the
-    // existing list and let the user navigate if not visible.
+    // If a daily note for today already exists, open it as a tab instead of
+    // creating a duplicate (search the full list — tabs work regardless of
+    // the sidebar's current type filter).
     const existing = notes.find(n => n.type === 'daily' && n.title === today)
     if (existing) {
-      // If we're on a filter that hides dailies, switch to All first
-      if (filter.type !== undefined && filter.type !== 'daily') {
-        setFilter({})
-          .then(() => select(existing.id))
-          .catch(e => toast(e instanceof Error ? e.message : 'Failed to switch filter', 'error'))
-      } else {
-        select(existing.id)
-      }
+      select(existing.id)
       return
     }
 
@@ -194,14 +248,14 @@ export default function NotesPage(): React.ReactElement {
   }
 
   function handleNewBookmark(): void {
-    create({ title: 'New bookmark', type: 'bookmark', url: '' }, toast).catch(() => {})
+    create({ title: 'New bookmark', type: 'bookmark' }, toast).catch(() => {})
   }
 
   // ---------------------------------------------------------------------------
   // Derived values
   // ---------------------------------------------------------------------------
 
-  const selectedNote = notes.find(n => n.id === selectedId) ?? null
+  const activeNote = notes.find(n => n.id === activeTabId) ?? null
 
   // ---------------------------------------------------------------------------
   // Render
@@ -265,16 +319,17 @@ export default function NotesPage(): React.ReactElement {
             <div className="flex items-center justify-center h-20 text-xs text-muted-foreground">
               Loading…
             </div>
-          ) : notes.length === 0 ? (
+          ) : visibleNotes.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-20 text-center px-4">
               <p className="text-xs text-muted-foreground">No notes yet.</p>
             </div>
           ) : (
-            notes.map(note => (
+            visibleNotes.map(note => (
               <NoteListItem
                 key={note.id}
                 note={note}
-                selected={note.id === selectedId}
+                open={openTabIds.includes(note.id)}
+                active={note.id === activeTabId}
                 onClick={() => select(note.id)}
               />
             ))
@@ -282,13 +337,33 @@ export default function NotesPage(): React.ReactElement {
         </div>
       </div>
 
-      {/* ── Right panel — editor or empty state ──────────────────────────── */}
-      <div className="flex-1 min-w-0">
-        {selectedNote ? (
-          <NoteEditor note={selectedNote} />
-        ) : (
-          <EmptyState onNew={handleNewNote} />
+      {/* ── Right panel — tab strip + editor or empty state ──────────────── */}
+      <div className="flex-1 min-w-0 flex flex-col">
+        {openTabIds.length > 0 && (
+          <div className="flex items-stretch border-b border-border bg-card overflow-x-auto flex-shrink-0">
+            {openTabIds.map(id => {
+              const note = notes.find(n => n.id === id)
+              if (!note) return null
+              return (
+                <NoteTab
+                  key={id}
+                  note={note}
+                  active={id === activeTabId}
+                  onActivate={() => setActiveTab(id)}
+                  onClose={() => closeTab(id)}
+                />
+              )
+            })}
+          </div>
         )}
+
+        <div className="flex-1 min-h-0">
+          {activeNote ? (
+            <NoteEditor note={activeNote} />
+          ) : (
+            <EmptyState onNew={handleNewNote} />
+          )}
+        </div>
       </div>
     </div>
   )

@@ -1,19 +1,26 @@
 /**
- * NoteEditor.tsx — Editor pane for a single note.
+ * NoteEditor.tsx — Editor pane for the active tab's note.
  *
  * Features:
- *   - Title input + markdown-source textarea body (no live preview — post-MVP)
- *   - Debounced autosave (~500 ms) on title / body / url change → store.update
+ *   - Plain notes (`type: 'note'`): no separate title field — the first line of
+ *     `content` is the header (rendered as a title-styled single-line input); the
+ *     rest of `content` is the markdown body. Editing the header re-derives the
+ *     DB `title` column (leading markdown `#` markers stripped) so search, the
+ *     sidebar list, and the tab label stay in sync.
+ *   - Daily notes & bookmarks: separate title `Input` + a full-content markdown
+ *     textarea (no dedicated URL field — links just go in the body, Notion-style).
+ *   - Debounced autosave (~500 ms) on any field change → store.update
  *   - Pin toggle button
  *   - Delete with inline confirm
- *   - Bookmark type: shows a URL field + open-in-browser button
+ *   - The editor canvas always renders on a fixed white surface (Notion-style
+ *     paper), regardless of the app's light/dark theme.
  *
- * When `note.id` changes (user selected a different note), the editor resets
- * its local form state and cancels any pending autosave timer.
+ * When `note.id` changes (user switched tabs), the editor resets its local
+ * form state and cancels any pending autosave timer.
  */
 
 import React, { useState, useEffect, useRef } from 'react'
-import { Pin, PinOff, Trash2, ExternalLink } from 'lucide-react'
+import { Pin, PinOff, Trash2 } from 'lucide-react'
 import type { Note, UpdateNoteInput } from '@shared/types'
 import { useNotesStore } from '@/store/notes'
 import { useToast } from '@/components/ToastProvider'
@@ -21,6 +28,23 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
+
+// ---------------------------------------------------------------------------
+// First-line header helpers (plain notes only)
+// ---------------------------------------------------------------------------
+
+/** Split content into the first line (header) and the rest (body). */
+function splitContent(content: string): { header: string; body: string } {
+  const nl = content.indexOf('\n')
+  return nl === -1
+    ? { header: content, body: '' }
+    : { header: content.slice(0, nl), body: content.slice(nl + 1) }
+}
+
+/** Derive the DB `title` from the first-line header (strip leading markdown `#`s). */
+function deriveTitle(header: string): string {
+  return header.replace(/^#{1,6}\s*/, '').trim() || 'Untitled'
+}
 
 // ---------------------------------------------------------------------------
 // Component
@@ -34,9 +58,10 @@ export default function NoteEditor({ note }: NoteEditorProps): React.ReactElemen
   const { toast } = useToast()
   const { update, togglePin, remove } = useNotesStore()
 
-  const [title, setTitle] = useState(note.title)
-  const [content, setContent] = useState(note.content)
-  const [url, setUrl] = useState(note.url ?? '')
+  const isPlainNote = note.type === 'note'
+
+  const [title, setTitle] = useState(note.title)       // daily / bookmark only
+  const [content, setContent] = useState(note.content)  // full markdown source (all types)
   const [confirmDelete, setConfirmDelete] = useState(false)
 
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -45,7 +70,6 @@ export default function NoteEditor({ note }: NoteEditorProps): React.ReactElemen
   useEffect(() => {
     setTitle(note.title)
     setContent(note.content)
-    setUrl(note.url ?? '')
     setConfirmDelete(false)
 
     return () => {
@@ -69,34 +93,44 @@ export default function NoteEditor({ note }: NoteEditorProps): React.ReactElemen
   }
 
   // ---------------------------------------------------------------------------
-  // Field change handlers
+  // Plain note: first-line header + body — both derived from `content`
+  // ---------------------------------------------------------------------------
+
+  const { header, body } = splitContent(content)
+
+  function handleHeaderChange(e: React.ChangeEvent<HTMLInputElement>): void {
+    const newHeader = e.target.value
+    const nextContent = body.length ? `${newHeader}\n${body}` : newHeader
+    setContent(nextContent)
+    scheduleSave({ title: deriveTitle(newHeader), content: nextContent })
+  }
+
+  function handleBodyChange(e: React.ChangeEvent<HTMLTextAreaElement>): void {
+    const newBody = e.target.value
+    const nextContent = newBody.length ? `${header}\n${newBody}` : header
+    setContent(nextContent)
+    scheduleSave({ title: deriveTitle(header), content: nextContent })
+  }
+
+  // ---------------------------------------------------------------------------
+  // Daily / bookmark: separate title field + full content
   // ---------------------------------------------------------------------------
 
   function handleTitleChange(e: React.ChangeEvent<HTMLInputElement>): void {
     const val = e.target.value
     setTitle(val)
-    scheduleSave({ title: val, content, url: url || null })
+    scheduleSave({ title: val, content })
   }
 
   function handleContentChange(e: React.ChangeEvent<HTMLTextAreaElement>): void {
     const val = e.target.value
     setContent(val)
-    scheduleSave({ title, content: val, url: url || null })
-  }
-
-  function handleUrlChange(e: React.ChangeEvent<HTMLInputElement>): void {
-    const val = e.target.value
-    setUrl(val)
-    scheduleSave({ title, content, url: val || null })
+    scheduleSave({ title, content: val })
   }
 
   // ---------------------------------------------------------------------------
   // Actions
   // ---------------------------------------------------------------------------
-
-  function handleOpenUrl(): void {
-    if (url) window.api.shell.openExternal(url)
-  }
 
   function handleTogglePin(): void {
     togglePin(note.id, toast)
@@ -112,13 +146,14 @@ export default function NoteEditor({ note }: NoteEditorProps): React.ReactElemen
   }
 
   // ---------------------------------------------------------------------------
-  // Render
+  // Render — always a fixed white canvas (Notion-style paper), independent of
+  // the app's light/dark theme.
   // ---------------------------------------------------------------------------
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full bg-white text-neutral-900">
       {/* Toolbar */}
-      <div className="flex items-center justify-between px-6 pt-4 pb-3 border-b border-border flex-shrink-0">
+      <div className="flex items-center justify-between px-6 pt-4 pb-3 border-b border-neutral-200 flex-shrink-0">
         {/* Left: pin + type badge */}
         <div className="flex items-center gap-2">
           <Button
@@ -126,20 +161,20 @@ export default function NoteEditor({ note }: NoteEditorProps): React.ReactElemen
             variant="ghost"
             onClick={handleTogglePin}
             title={note.pinned ? 'Unpin note' : 'Pin note'}
-            className="h-7 w-7"
+            className="h-7 w-7 hover:bg-neutral-100"
           >
             {note.pinned
               ? <Pin className="h-4 w-4 text-primary" />
-              : <PinOff className="h-4 w-4 text-muted-foreground" />}
+              : <PinOff className="h-4 w-4 text-neutral-400" />}
           </Button>
-          <span className="text-xs font-medium text-muted-foreground capitalize">{note.type}</span>
+          <span className="text-xs font-medium text-neutral-500 capitalize">{note.type}</span>
         </div>
 
         {/* Right: delete with confirm */}
         <div className="flex items-center gap-1.5">
           {confirmDelete ? (
             <>
-              <span className="text-xs text-muted-foreground mr-1">Delete this note?</span>
+              <span className="text-xs text-neutral-500 mr-1">Delete this note?</span>
               <Button
                 size="sm"
                 variant="destructive"
@@ -151,7 +186,7 @@ export default function NoteEditor({ note }: NoteEditorProps): React.ReactElemen
               <Button
                 size="sm"
                 variant="ghost"
-                className="h-7 px-2 text-xs"
+                className="h-7 px-2 text-xs hover:bg-neutral-100"
                 onClick={() => setConfirmDelete(false)}
               >
                 Cancel
@@ -163,7 +198,7 @@ export default function NoteEditor({ note }: NoteEditorProps): React.ReactElemen
               variant="ghost"
               onClick={() => setConfirmDelete(true)}
               title="Delete note"
-              className="h-7 w-7 text-muted-foreground hover:text-destructive"
+              className="h-7 w-7 text-neutral-400 hover:text-destructive hover:bg-neutral-100"
             >
               <Trash2 className="h-4 w-4" />
             </Button>
@@ -173,58 +208,37 @@ export default function NoteEditor({ note }: NoteEditorProps): React.ReactElemen
 
       {/* Editor body — scrollable */}
       <div className="flex-1 overflow-y-auto px-6 py-4 flex flex-col gap-4">
-        {/* Title */}
-        <Input
-          value={title}
-          onChange={handleTitleChange}
-          placeholder="Note title…"
-          aria-label="Note title"
-          className="text-base font-semibold border-0 border-b border-border rounded-none px-0 shadow-none focus-visible:ring-0 focus-visible:border-primary h-auto py-1.5"
-        />
-
-        {/* URL field — bookmarks only */}
-        {note.type === 'bookmark' && (
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="note-url" className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-              URL
-            </Label>
-            <div className="flex gap-2">
-              <Input
-                id="note-url"
-                type="url"
-                value={url}
-                onChange={handleUrlChange}
-                placeholder="https://…"
-                className="flex-1"
-              />
-              {url && (
-                <Button
-                  type="button"
-                  size="icon"
-                  variant="outline"
-                  onClick={handleOpenUrl}
-                  title="Open in browser"
-                  className="h-8 w-8 flex-shrink-0"
-                >
-                  <ExternalLink className="h-4 w-4" />
-                </Button>
-              )}
-            </div>
-          </div>
+        {/* Title — plain notes: first-line header; daily/bookmark: separate title field */}
+        {isPlainNote ? (
+          <Input
+            value={header}
+            onChange={handleHeaderChange}
+            placeholder="Note title (first line)…"
+            aria-label="Note title (first line)"
+            className="text-base font-semibold border-0 border-b border-neutral-200 rounded-none px-0 shadow-none bg-transparent text-neutral-900 placeholder:text-neutral-400 focus-visible:ring-0 focus-visible:border-primary h-auto py-1.5"
+          />
+        ) : (
+          <Input
+            value={title}
+            onChange={handleTitleChange}
+            placeholder="Note title…"
+            aria-label="Note title"
+            className="text-base font-semibold border-0 border-b border-neutral-200 rounded-none px-0 shadow-none bg-transparent text-neutral-900 placeholder:text-neutral-400 focus-visible:ring-0 focus-visible:border-primary h-auto py-1.5"
+          />
         )}
 
         {/* Content — markdown source */}
         <div className="flex flex-col gap-1.5 flex-1">
-          <Label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-            Content
-            <span className="ml-1 font-normal normal-case text-muted-foreground/60">(markdown)</span>
+          <Label className="text-xs font-semibold uppercase tracking-wide text-neutral-500">
+            {isPlainNote ? 'Body' : 'Content'}
+            <span className="ml-1 font-normal normal-case text-neutral-400">(markdown)</span>
           </Label>
           <Textarea
-            value={content}
-            onChange={handleContentChange}
+            value={isPlainNote ? body : content}
+            onChange={isPlainNote ? handleBodyChange : handleContentChange}
             placeholder="Start writing… (markdown supported)"
-            aria-label="Note content"
-            className="font-mono text-sm resize-none min-h-[320px] flex-1"
+            aria-label={isPlainNote ? 'Note body' : 'Note content'}
+            className="font-mono text-sm resize-none min-h-[320px] flex-1 bg-transparent text-neutral-900 placeholder:text-neutral-400 border-neutral-200 shadow-none"
             rows={18}
           />
         </div>
