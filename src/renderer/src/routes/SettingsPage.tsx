@@ -1,9 +1,14 @@
-import React from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import type { AppSettings } from '@shared/types'
 import { useSessionStore } from '@/store/session'
 import { useSettingsStore } from '@/store/settings'
 import { useToast } from '@/components/ToastProvider'
+import { unwrap } from '@/lib/api'
 import { Button } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 
 // ---------------------------------------------------------------------------
 // Auto-lock options
@@ -63,6 +68,89 @@ export default function SettingsPage(): React.ReactElement {
       toast(`Theme set to ${theme}`, 'success')
     } else {
       toast('Failed to save theme', 'error')
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // AI (Ollama)
+  // ---------------------------------------------------------------------------
+
+  const [baseUrlInput, setBaseUrlInput] = useState('')
+  const [testStatus, setTestStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
+  const [testError, setTestError] = useState<string | null>(null)
+  const [models, setModels] = useState<string[]>([])
+  const autoTestedRef = useRef(false)
+
+  // Sync the base URL input once settings finish loading (settings is only
+  // non-null once `loaded` is true, and this section only renders then too).
+  useEffect(() => {
+    if (settings) setBaseUrlInput(settings.ai.baseUrl)
+  }, [loaded]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  async function handleTestConnection(): Promise<void> {
+    setTestStatus('loading')
+    setTestError(null)
+    try {
+      const status = await unwrap(window.api.ai.status())
+      if (status.reachable) {
+        setModels(status.models)
+        setTestStatus('success')
+      } else {
+        setModels([])
+        setTestStatus('error')
+        setTestError(status.error ?? 'Could not reach Ollama.')
+      }
+    } catch (e) {
+      setModels([])
+      setTestStatus('error')
+      setTestError(e instanceof Error ? e.message : 'Could not reach Ollama.')
+    }
+  }
+
+  // Auto-run Test connection once on load when AI is already enabled, so the
+  // Model select has options to show the persisted selection after a restart.
+  useEffect(() => {
+    if (loaded && settings?.ai.enabled && !autoTestedRef.current) {
+      autoTestedRef.current = true
+      handleTestConnection()
+    }
+  }, [loaded]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  async function handleAiEnabledChange(enabled: boolean): Promise<void> {
+    if (!settings) return
+    const result = await update({ ai: { ...settings.ai, enabled } })
+    if (result) {
+      toast(enabled ? 'AI (Ollama) enabled' : 'AI (Ollama) disabled', 'success')
+      if (enabled) {
+        handleTestConnection()
+      } else {
+        setTestStatus('idle')
+        setTestError(null)
+        setModels([])
+      }
+    } else {
+      toast('Failed to save setting', 'error')
+    }
+  }
+
+  async function handleBaseUrlBlur(): Promise<void> {
+    if (!settings) return
+    if (baseUrlInput === settings.ai.baseUrl) return
+    const result = await update({ ai: { ...settings.ai, baseUrl: baseUrlInput } })
+    if (result) {
+      toast('Base URL saved', 'success')
+    } else {
+      toast('Failed to save base URL', 'error')
+    }
+  }
+
+  async function handleModelChange(model: string): Promise<void> {
+    if (!settings) return
+    const result = await update({ ai: { ...settings.ai, model } })
+    if (result) {
+      toast('Default model saved', 'success')
+    } else {
+      toast('Failed to save model', 'error')
     }
   }
 
@@ -175,6 +263,90 @@ export default function SettingsPage(): React.ReactElement {
             <p className="text-xs text-muted-foreground mt-1.5">
               Shortcuts are suppressed while typing in inputs (except Esc and ⌘K).
             </p>
+          </section>
+
+          {/* AI (Ollama) */}
+          <section className="mb-6">
+            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
+              AI (Ollama)
+            </p>
+
+            <div className="flex items-center gap-2 mb-3">
+              <Checkbox
+                id="ai-enabled"
+                checked={settings?.ai.enabled ?? false}
+                onCheckedChange={(checked) => handleAiEnabledChange(checked === true)}
+              />
+              <Label
+                htmlFor="ai-enabled"
+                className="text-sm font-normal normal-case tracking-normal text-foreground cursor-pointer"
+              >
+                Enable AI (Ollama)
+              </Label>
+            </div>
+
+            <div className={`space-y-3 ${settings?.ai.enabled ? '' : 'opacity-50 pointer-events-none'}`}>
+              {/* Base URL */}
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="ai-base-url" className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  Base URL
+                </Label>
+                <Input
+                  id="ai-base-url"
+                  value={baseUrlInput}
+                  onChange={(e) => setBaseUrlInput(e.target.value)}
+                  onBlur={handleBaseUrlBlur}
+                  placeholder="http://localhost:11434"
+                  disabled={!settings?.ai.enabled}
+                />
+              </div>
+
+              {/* Test connection */}
+              <div className="flex items-center gap-3 flex-wrap">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleTestConnection}
+                  disabled={!settings?.ai.enabled || testStatus === 'loading'}
+                >
+                  {testStatus === 'loading' ? 'Testing…' : 'Test connection'}
+                </Button>
+                {testStatus === 'success' && (
+                  <span className="text-xs text-success">
+                    Connected · {models.length} model{models.length === 1 ? '' : 's'}
+                  </span>
+                )}
+                {testStatus === 'error' && testError && (
+                  <span className="text-xs text-destructive">{testError}</span>
+                )}
+              </div>
+
+              {/* Model */}
+              <div className="flex flex-col gap-1.5">
+                <Label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  Model
+                </Label>
+                <Select
+                  value={settings?.ai.model || undefined}
+                  onValueChange={handleModelChange}
+                  disabled={!settings?.ai.enabled || models.length === 0}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Test connection to load models" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {models.map((m) => (
+                      <SelectItem key={m} value={m}>{m}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <p className="text-xs text-muted-foreground">
+                Runs entirely on your Mac via Ollama. Install from ollama.com and run{' '}
+                <code className="font-mono">ollama pull &lt;model&gt;</code>. Nothing is sent to the cloud.
+              </p>
+            </div>
           </section>
 
           {/* Security note */}

@@ -1,5 +1,5 @@
 // src/shared/api.ts — shape of window.api exposed by preload. Every method resolves IpcResult<T>.
-import type { Task, Note, DatasourceRef, SessionState, SearchResult, AppSettings, IpcResult, CreateTaskInput, UpdateTaskInput, TaskFilter, CreateNoteInput, UpdateNoteInput, NoteFilter } from './types'
+import type { Task, Note, DatasourceRef, SessionState, SearchResult, AppSettings, IpcResult, CreateTaskInput, UpdateTaskInput, TaskFilter, CreateNoteInput, UpdateNoteInput, NoteFilter, AiStatus, AiGenerateInput, AiGenerateResult } from './types'
 
 export interface KouignApi {
   datasource: {
@@ -31,10 +31,15 @@ export interface KouignApi {
     get(): Promise<IpcResult<AppSettings>>
     update(patch: Partial<AppSettings>): Promise<IpcResult<AppSettings>>
   }
+  ai: {
+    status(): Promise<IpcResult<AiStatus>>          // probes the configured Ollama baseUrl
+    listModels(): Promise<IpcResult<string[]>>
+    generate(input: AiGenerateInput): Promise<IpcResult<AiGenerateResult>>
+  }
   shell: { openExternal(url: string): Promise<IpcResult<boolean>> }
   onSessionChanged(cb: (s: SessionState) => void): () => void  // returns unsubscribe
   pingActivity(): void
 }
 
 // Re-export for convenience
-export type { Task, Note, DatasourceRef, SessionState, SearchResult, AppSettings, IpcResult, CreateTaskInput, UpdateTaskInput, TaskFilter, CreateNoteInput, UpdateNoteInput, NoteFilter }
+export type { Task, Note, DatasourceRef, SessionState, SearchResult, AppSettings, IpcResult, CreateTaskInput, UpdateTaskInput, TaskFilter, CreateNoteInput, UpdateNoteInput, NoteFilter, AiStatus, AiGenerateInput, AiGenerateResult }

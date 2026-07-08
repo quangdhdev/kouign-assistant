@@ -1,6 +1,6 @@
 # Task: Connect to local Ollama for on-device AI
 
-> **Owner:** coder sub-agent (model: sonnet) · **Status:** ready
+> **Owner:** coder sub-agent (model: sonnet) · **Status:** done
 > **Depends on:** nothing — builds on shipped MVP (`AppSettings` + `settings` IPC, `handle()` wrapper, preload bridge, `SettingsPage`)
 > **Read first:** [ARCHITECTURE.md](../../ARCHITECTURE.md) §2 (process model), §6 (IPC surface), §8 (security posture);
 > [DESIGN_SYSTEM.md](../../DESIGN_SYSTEM.md) §5 (Input/Select/Button), §6 (Settings layout)
@@ -111,18 +111,18 @@ ai: {
   encrypted DB.
 
 ## Acceptance criteria
-- [ ] Settings shows an **AI (Ollama)** section with Enable toggle, Base URL, Test connection, and
+- [x] Settings shows an **AI (Ollama)** section with Enable toggle, Base URL, Test connection, and
       Model select.
-- [ ] With Ollama running locally, **Test connection** reports success and lists the installed
+- [x] With Ollama running locally, **Test connection** reports success and lists the installed
       models; selecting a model persists across an app restart.
-- [ ] With Ollama **not** running (or a bad URL), Test connection shows a clear, non-crashing error
+- [x] With Ollama **not** running (or a bad URL), Test connection shows a clear, non-crashing error
       message (no unhandled rejection).
-- [ ] `ai.generate` returns text from the selected model (verifiable via Test connection wiring or
+- [x] `ai.generate` returns text from the selected model (verifiable via Test connection wiring or
       a temporary call) — round-trips through main, not the renderer.
-- [ ] Existing datasources/configs created before this change still load (settings merge in
+- [x] Existing datasources/configs created before this change still load (settings merge in
       `DEFAULT_SETTINGS.ai`).
-- [ ] No renderer-side network calls; CSP unchanged; nothing AI-related written to the encrypted DB.
-- [ ] `npm run lint` / `npm run build` exit 0.
+- [x] No renderer-side network calls; CSP unchanged; nothing AI-related written to the encrypted DB.
+- [x] `npm run lint` / `npm run build` exit 0.
 
 ## Verification
 ```bash

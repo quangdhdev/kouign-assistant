@@ -55,12 +55,45 @@ export interface Note {
 // App settings (Phase 1)
 // ---------------------------------------------------------------------------
 
+export interface AiSettings {
+  enabled: boolean   // default false — opt-in
+  baseUrl: string    // default 'http://localhost:11434'
+  model: string      // default '' — user must pick after Test connection
+}
+
 export interface AppSettings {
   autoLockMinutes: number     // 0 = never; default 15
   theme: 'light' | 'dark' | 'system'
+  ai: AiSettings
 }
 
-export const DEFAULT_SETTINGS: AppSettings = { autoLockMinutes: 15, theme: 'system' }
+export const DEFAULT_SETTINGS: AppSettings = {
+  autoLockMinutes: 15,
+  theme: 'system',
+  ai: { enabled: false, baseUrl: 'http://localhost:11434', model: '' },
+}
+
+// ---------------------------------------------------------------------------
+// AI (local Ollama) — foundation IPC DTOs
+// ---------------------------------------------------------------------------
+
+/** Result of probing the configured Ollama server. Never thrown — always returned as data. */
+export interface AiStatus {
+  reachable: boolean
+  models: string[]
+  error?: string
+}
+
+export interface AiGenerateInput {
+  prompt: string
+  system?: string
+  model?: string   // defaults to settings.ai.model when omitted
+}
+
+export interface AiGenerateResult {
+  text: string
+  model: string
+}
 
 // ---------------------------------------------------------------------------
 // Datasource config (Phase 1)
