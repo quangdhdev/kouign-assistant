@@ -1,6 +1,17 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { NavLink, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom'
-import { Search, Sun, Moon, Monitor } from 'lucide-react'
+import {
+  Search,
+  Sun,
+  Moon,
+  Monitor,
+  ListTodo,
+  StickyNote,
+  Settings as SettingsIcon,
+  PanelLeftClose,
+  PanelLeftOpen,
+  type LucideIcon,
+} from 'lucide-react'
 import { useSessionStore } from '@/store/session'
 import { useSettingsStore } from '@/store/settings'
 import { useUiStore } from '@/store/ui'
@@ -28,22 +39,44 @@ const THEME_TITLE: Record<AppSettings['theme'], string> = {
 }
 
 // ---------------------------------------------------------------------------
-// Sidebar nav link
+// Sidebar nav model
 // ---------------------------------------------------------------------------
 
-function SidebarLink({ to, children }: { to: string; children: React.ReactNode }): React.ReactElement {
+const SIDEBAR_COLLAPSED_KEY = 'kouign.sidebar.collapsed'
+
+const NAV_ITEMS: Array<{ to: string; label: string; Icon: LucideIcon }> = [
+  { to: '/todos', label: 'Todos', Icon: ListTodo },
+  { to: '/notes', label: 'Notes', Icon: StickyNote },
+  { to: '/settings', label: 'Settings', Icon: SettingsIcon },
+]
+
+function SidebarLink({
+  to,
+  label,
+  Icon,
+  collapsed,
+}: {
+  to: string
+  label: string
+  Icon: LucideIcon
+  collapsed: boolean
+}): React.ReactElement {
   return (
     <NavLink
       to={to}
+      title={label}
       className={({ isActive }) =>
-        `flex items-center px-4 py-2 text-sm font-medium rounded mx-2 transition-colors ${
+        `flex items-center w-full py-3 text-sm font-medium transition-colors ${
+          collapsed ? 'justify-center px-2' : 'gap-2 px-4'
+        } ${
           isActive
             ? 'bg-sidebar-accent text-sidebar-accent-foreground'
             : 'text-sidebar-foreground hover:bg-secondary'
         }`
       }
     >
-      {children}
+      <Icon className="size-6 flex-shrink-0" />
+      <span className={collapsed ? 'sr-only' : ''}>{label}</span>
     </NavLink>
   )
 }
@@ -60,6 +93,15 @@ export default function AppShell(): React.ReactElement {
   const location = useLocation()
 
   const [searchOpen, setSearchOpen] = useState(false)
+
+  // Sidebar collapse — read synchronously so there's no expand→collapse flash on load.
+  const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(
+    () => localStorage.getItem(SIDEBAR_COLLAPSED_KEY) === 'true',
+  )
+
+  useEffect(() => {
+    localStorage.setItem(SIDEBAR_COLLAPSED_KEY, String(sidebarCollapsed))
+  }, [sidebarCollapsed])
 
   // ---------------------------------------------------------------------------
   // Global keyboard shortcut handler
@@ -176,11 +218,32 @@ export default function AppShell(): React.ReactElement {
       </div>
 
       <div className="flex flex-1 min-h-0">
-        {/* Left sidebar — 208px */}
-        <nav className="app-no-drag w-52 flex-shrink-0 bg-sidebar border-r border-sidebar-border py-2 flex flex-col">
-          <SidebarLink to="/todos">Todos</SidebarLink>
-          <SidebarLink to="/notes">Notes</SidebarLink>
-          <SidebarLink to="/settings">Settings</SidebarLink>
+        {/* Left sidebar — 208px expanded / 56px collapsed */}
+        <nav
+          className={`app-no-drag flex-shrink-0 bg-sidebar border-r border-sidebar-border flex flex-col transition-[width] duration-150 ${
+            sidebarCollapsed ? 'w-14' : 'w-52'
+          }`}
+        >
+          <div className="flex-1 flex flex-col">
+            {NAV_ITEMS.map(({ to, label, Icon }) => (
+              <SidebarLink key={to} to={to} label={label} Icon={Icon} collapsed={sidebarCollapsed} />
+            ))}
+          </div>
+
+          <button
+            onClick={() => setSidebarCollapsed((prev) => !prev)}
+            title={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            aria-label={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            className={`flex items-center w-full py-3 text-sidebar-foreground hover:bg-secondary transition-colors ${
+              sidebarCollapsed ? 'justify-center px-2' : 'justify-start px-4'
+            }`}
+          >
+            {sidebarCollapsed ? (
+              <PanelLeftOpen className="size-6 flex-shrink-0" />
+            ) : (
+              <PanelLeftClose className="size-6 flex-shrink-0" />
+            )}
+          </button>
         </nav>
 
         {/* Content area — scrollable */}
