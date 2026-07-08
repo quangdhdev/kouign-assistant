@@ -14,6 +14,7 @@ export const IPC = {
   notes:    { list: 'notes:list', create: 'notes:create', update: 'notes:update', remove: 'notes:remove', togglePin: 'notes:togglePin' },
   search:   { query: 'search:query' },
   settings: { get: 'settings:get', update: 'settings:update' },
+  ai:       { status: 'ai:status', listModels: 'ai:listModels', generate: 'ai:generate' },
   shell:    { openExternal: 'shell:openExternal' },
   // main → renderer push events
   events:   { sessionChanged: 'event:sessionChanged' },
