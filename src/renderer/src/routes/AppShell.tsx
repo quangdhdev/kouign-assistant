@@ -15,6 +15,8 @@ import {
 import { useSessionStore } from '@/store/session'
 import { useSettingsStore } from '@/store/settings'
 import { useUiStore } from '@/store/ui'
+import { useCategoriesStore } from '@/store/categories'
+import { useToast } from '@/components/ToastProvider'
 import SettingsPage from './SettingsPage'
 import TodosPage from '@/features/todos/TodosPage'
 import NotesPage from '@/features/notes/NotesPage'
@@ -89,10 +91,17 @@ export default function AppShell(): React.ReactElement {
   const { state, lock } = useSessionStore()
   const { settings, update: updateSettings } = useSettingsStore()
   const { fireNewTask, fireNewNote } = useUiStore()
+  const { load: loadCategories } = useCategoriesStore()
+  const { toast } = useToast()
   const navigate = useNavigate()
   const location = useLocation()
 
   const [searchOpen, setSearchOpen] = useState(false)
+
+  // Load categories once per unlock session — shared by Todos, Notes, and Settings.
+  useEffect(() => {
+    loadCategories().catch(e => toast(e instanceof Error ? e.message : 'Failed to load categories', 'error'))
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Sidebar collapse — read synchronously so there's no expand→collapse flash on load.
   const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(

@@ -7,7 +7,7 @@
  */
 
 import React, { useState, useEffect } from 'react'
-import type { Task, TaskStatus, TaskPriority, TaskCategory } from '@shared/types'
+import type { Task, TaskStatus, TaskPriority } from '@shared/types'
 import { useToast } from '@/components/ToastProvider'
 import { useTasksStore } from '@/store/tasks'
 import {
@@ -28,7 +28,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { STATUS_LABEL, PRIORITY_LABEL, CATEGORY_LABEL } from './meta'
+import CategorySelect from '@/components/CategorySelect'
+import { STATUS_LABEL, PRIORITY_LABEL } from './meta'
 
 // ---------------------------------------------------------------------------
 // Types
@@ -39,6 +40,8 @@ interface TaskDialogProps {
   onOpenChange: (open: boolean) => void
   /** Provide a task to edit; omit to create. */
   task?: Task | null
+  /** Category to preselect when creating (e.g. the active Todos category filter). Ignored when editing. */
+  defaultCategoryId?: number | null
   onSaved?: () => void
 }
 
@@ -51,19 +54,19 @@ interface FormState {
   description: string
   status: TaskStatus
   priority: TaskPriority
-  category: TaskCategory
+  categoryId: number | null
   dueDate: string
   jiraUrl: string
   slackUrl: string
 }
 
-function defaultForm(task?: Task | null): FormState {
+function defaultForm(task?: Task | null, defaultCategoryId?: number | null): FormState {
   return {
     title:       task?.title        ?? '',
     description: task?.description  ?? '',
     status:      task?.status       ?? 'todo',
     priority:    task?.priority     ?? 'medium',
-    category:    task?.category     ?? 'personal',
+    categoryId:  task ? task.categoryId : (defaultCategoryId ?? null),
     dueDate:     task?.dueDate      ?? '',
     jiraUrl:     task?.jiraUrl      ?? '',
     slackUrl:    task?.slackUrl     ?? '',
@@ -74,22 +77,22 @@ function defaultForm(task?: Task | null): FormState {
 // Component
 // ---------------------------------------------------------------------------
 
-export default function TaskDialog({ open, onOpenChange, task, onSaved }: TaskDialogProps): React.ReactElement {
+export default function TaskDialog({ open, onOpenChange, task, defaultCategoryId, onSaved }: TaskDialogProps): React.ReactElement {
   const { toast } = useToast()
   const { create, update } = useTasksStore()
   const isEdit = !!task
 
-  const [form, setForm] = useState<FormState>(defaultForm(task))
+  const [form, setForm] = useState<FormState>(defaultForm(task, defaultCategoryId))
   const [titleError, setTitleError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
 
   // Reset form when dialog opens or task changes
   useEffect(() => {
     if (open) {
-      setForm(defaultForm(task))
+      setForm(defaultForm(task, defaultCategoryId))
       setTitleError(null)
     }
-  }, [open, task])
+  }, [open, task]) // eslint-disable-line react-hooks/exhaustive-deps
 
   function set<K extends keyof FormState>(key: K, value: FormState[K]): void {
     setForm(prev => ({ ...prev, [key]: value }))
@@ -112,7 +115,7 @@ export default function TaskDialog({ open, onOpenChange, task, onSaved }: TaskDi
         description: form.description.trim() || null,
         status:      form.status,
         priority:    form.priority,
-        category:    form.category,
+        categoryId:  form.categoryId,
         dueDate:     form.dueDate || null,
         jiraUrl:     form.jiraUrl.trim() || null,
         slackUrl:    form.slackUrl.trim() || null,
@@ -198,16 +201,7 @@ export default function TaskDialog({ open, onOpenChange, task, onSaved }: TaskDi
 
             <div className="flex flex-col gap-1.5">
               <Label>Category</Label>
-              <Select value={form.category} onValueChange={v => set('category', v as TaskCategory)}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {(['personal', 'company'] as const).map(c => (
-                    <SelectItem key={c} value={c}>{CATEGORY_LABEL[c]}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <CategorySelect value={form.categoryId} onChange={v => set('categoryId', v)} />
             </div>
           </div>
 

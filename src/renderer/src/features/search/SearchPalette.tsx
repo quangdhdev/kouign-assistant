@@ -19,6 +19,8 @@ import type { SearchResult } from '@shared/types'
 import { useSearchStore } from '@/store/search'
 import { useTasksStore } from '@/store/tasks'
 import { useNotesStore } from '@/store/notes'
+import { useCategoriesStore } from '@/store/categories'
+import { STATUS_LABEL } from '@/features/todos/meta'
 import { cn } from '@/lib/utils'
 
 // ---------------------------------------------------------------------------
@@ -66,9 +68,14 @@ interface ResultRowProps {
 }
 
 function ResultRow({ result, active, onPointerEnter, onSelect, rowRef }: ResultRowProps): React.ReactElement {
+  const categories = useCategoriesStore((s) => s.categories)
+
   const title = result.kind === 'task' ? result.task.title : result.note.title
+  const categoryName = result.kind === 'task' && result.task.categoryId !== null
+    ? categories.find(c => c.id === result.task.categoryId)?.name
+    : undefined
   const meta  = result.kind === 'task'
-    ? `${result.task.status} · ${result.task.category}`
+    ? [STATUS_LABEL[result.task.status], categoryName].filter(Boolean).join(' · ')
     : result.note.type
 
   return (

@@ -17,13 +17,15 @@
 
 import React, { useEffect, useRef, useState } from 'react'
 import { Plus, ExternalLink, MoreHorizontal, Pencil, Trash2, List, LayoutGrid } from 'lucide-react'
-import type { Task, TaskStatus, TaskCategory } from '@shared/types'
+import type { Task, TaskStatus } from '@shared/types'
 import { useTasksStore } from '@/store/tasks'
 import { useUiStore } from '@/store/ui'
+import { useCategoriesStore } from '@/store/categories'
 import { useToast } from '@/components/ToastProvider'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Badge } from '@/components/ui/badge'
+import CategoryTag from '@/components/CategoryTag'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -41,7 +43,6 @@ import {
   STATUS_BADGE_VARIANT,
   PRIORITY_BADGE_VARIANT,
   PRIORITY_LABEL,
-  CATEGORY_LABEL,
 } from './meta'
 
 // ---------------------------------------------------------------------------
@@ -178,9 +179,7 @@ function TaskRow({ task, onEdit, onDelete, confirmDelete }: TaskRowProps): React
           )}
 
           {/* Category */}
-          <span className="text-xs text-muted-foreground">
-            {CATEGORY_LABEL[task.category]}
-          </span>
+          <CategoryTag categoryId={task.categoryId} />
 
           {/* Status badge */}
           <Badge variant={STATUS_BADGE_VARIANT[task.status]}>
@@ -284,6 +283,7 @@ function TaskRow({ task, onEdit, onDelete, confirmDelete }: TaskRowProps): React
 export default function TodosPage(): React.ReactElement {
   const { toast } = useToast()
   const { tasks, filter, loading, load, setFilter, remove, openEditId, setOpenEditId } = useTasksStore()
+  const { categories } = useCategoriesStore()
   const newTaskSeq = useUiStore((s) => s.newTaskSeq)
 
   const [dialogOpen, setDialogOpen] = useState(false)
@@ -323,11 +323,12 @@ export default function TodosPage(): React.ReactElement {
   }, [newTaskSeq])
 
   // -- Category filter --
-  const activeCategory = filter.category ?? null
-  const activeStatus   = filter.status   ?? null
+  // undefined = All, null = Uncategorized, number = a specific category id.
+  const activeCategoryId = filter.categoryId
+  const activeStatus     = filter.status ?? null
 
-  function handleCategoryFilter(category: TaskCategory | null): void {
-    setFilter({ ...filter, category: category ?? undefined }).catch(
+  function handleCategoryFilter(categoryId: number | null | undefined): void {
+    setFilter({ ...filter, categoryId }).catch(
       e => toast(e instanceof Error ? e.message : 'Filter failed', 'error')
     )
   }
@@ -400,13 +401,17 @@ export default function TodosPage(): React.ReactElement {
 
       {/* Filter pills */}
       <div className="px-6 pb-3 flex flex-col gap-2 flex-shrink-0">
-        {/* Category pills */}
+        {/* Category pills — dynamic from user-managed categories */}
         <div className="flex items-center gap-2">
           <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground w-16 flex-shrink-0">Category</span>
           <div className="flex gap-1.5 flex-wrap">
-            <Pill active={activeCategory === null} onClick={() => handleCategoryFilter(null)}>All</Pill>
-            <Pill active={activeCategory === 'personal'} onClick={() => handleCategoryFilter('personal')}>Personal</Pill>
-            <Pill active={activeCategory === 'company'} onClick={() => handleCategoryFilter('company')}>Company</Pill>
+            <Pill active={activeCategoryId === undefined} onClick={() => handleCategoryFilter(undefined)}>All</Pill>
+            {categories.map(cat => (
+              <Pill key={cat.id} active={activeCategoryId === cat.id} onClick={() => handleCategoryFilter(cat.id)}>
+                {cat.name}
+              </Pill>
+            ))}
+            <Pill active={activeCategoryId === null} onClick={() => handleCategoryFilter(null)}>Uncategorized</Pill>
           </div>
         </div>
 
@@ -444,7 +449,7 @@ export default function TodosPage(): React.ReactElement {
             <div className="flex flex-col items-center justify-center h-48 text-center px-6">
               <p className="text-sm font-medium text-foreground mb-1">No tasks here</p>
               <p className="text-xs text-muted-foreground mb-4">
-                {activeCategory !== null || activeStatus !== null
+                {activeCategoryId !== undefined || activeStatus !== null
                   ? 'Try clearing the filters, or create a new task.'
                   : 'Create your first task to get started.'}
               </p>
@@ -474,6 +479,7 @@ export default function TodosPage(): React.ReactElement {
         open={dialogOpen}
         onOpenChange={setDialogOpen}
         task={editingTask}
+        defaultCategoryId={typeof activeCategoryId === 'number' ? activeCategoryId : null}
       />
     </div>
   )

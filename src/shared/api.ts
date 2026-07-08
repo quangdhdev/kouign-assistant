@@ -1,5 +1,5 @@
 // src/shared/api.ts — shape of window.api exposed by preload. Every method resolves IpcResult<T>.
-import type { Task, Note, DatasourceRef, SessionState, SearchResult, AppSettings, IpcResult, CreateTaskInput, UpdateTaskInput, TaskFilter, CreateNoteInput, UpdateNoteInput, NoteFilter, AiStatus, AiGenerateInput, AiGenerateResult } from './types'
+import type { Task, Note, DatasourceRef, SessionState, SearchResult, AppSettings, IpcResult, CreateTaskInput, UpdateTaskInput, TaskFilter, CreateNoteInput, UpdateNoteInput, NoteFilter, AiStatus, AiGenerateInput, AiGenerateResult, Category, CreateCategoryInput, UpdateCategoryInput } from './types'
 
 export interface KouignApi {
   datasource: {
@@ -26,6 +26,12 @@ export interface KouignApi {
     remove(id: number): Promise<IpcResult<number>>       // returns removed id
     togglePin(id: number): Promise<IpcResult<Note>>
   }
+  categories: {
+    list(): Promise<IpcResult<Category[]>>
+    create(input: CreateCategoryInput): Promise<IpcResult<Category>>
+    update(id: number, patch: UpdateCategoryInput): Promise<IpcResult<Category>>
+    remove(id: number): Promise<IpcResult<number>>   // returns removed id; referencing tasks/notes become uncategorized
+  }
   search: { query(q: string): Promise<IpcResult<SearchResult[]>> }
   settings: {
     get(): Promise<IpcResult<AppSettings>>
@@ -42,4 +48,4 @@ export interface KouignApi {
 }
 
 // Re-export for convenience
-export type { Task, Note, DatasourceRef, SessionState, SearchResult, AppSettings, IpcResult, CreateTaskInput, UpdateTaskInput, TaskFilter, CreateNoteInput, UpdateNoteInput, NoteFilter, AiStatus, AiGenerateInput, AiGenerateResult }
+export type { Task, Note, DatasourceRef, SessionState, SearchResult, AppSettings, IpcResult, CreateTaskInput, UpdateTaskInput, TaskFilter, CreateNoteInput, UpdateNoteInput, NoteFilter, AiStatus, AiGenerateInput, AiGenerateResult, Category, CreateCategoryInput, UpdateCategoryInput }

@@ -107,7 +107,8 @@ src/
 
 ## 4. Data model
 
-A single encrypted SQLite database with two tables (tags are a post-MVP extension).
+A single encrypted SQLite database with three tables (tags are a post-MVP extension;
+distinct from categories — tags would be multi-select, categories are single-select).
 
 ### `tasks`
 
@@ -118,7 +119,8 @@ A single encrypted SQLite database with two tables (tags are a post-MVP extensio
 | description | TEXT | nullable |
 | status | TEXT | `todo` \| `in_progress` \| `done` |
 | priority | TEXT | `low` \| `medium` \| `high` |
-| category | TEXT | `personal` \| `company` |
+| category | TEXT | legacy `personal` \| `company` enum — **no longer read/written**, kept in place to avoid a table rebuild |
+| category_id | INTEGER | nullable FK → `categories.id`; the source of truth for a task's category |
 | due_date | TEXT | ISO date `yyyy-mm-dd`, nullable |
 | jira_url | TEXT | nullable |
 | slack_url | TEXT | nullable |
@@ -136,10 +138,26 @@ A single encrypted SQLite database with two tables (tags are a post-MVP extensio
 | type | TEXT | `note` \| `daily` \| `bookmark` |
 | url | TEXT | for bookmarks, nullable |
 | pinned | INTEGER | boolean 0/1 |
+| category_id | INTEGER | nullable FK → `categories.id` |
 | created_at | TEXT | ISO datetime |
 | updated_at | TEXT | ISO datetime |
 
-**Indexes**: `tasks(status)`, `tasks(category)`, `notes(type)`, `notes(pinned)`.
+### `categories`
+
+User-managed, single-select, shared by tasks and notes. Seeded with **Personal**/**Company**
+on the v2→v3 migration (backfilled from the legacy `tasks.category` enum); managed from
+Settings ▸ Categories (create / rename / recolor / delete). Deleting a category nulls out
+`category_id` on any referencing tasks/notes rather than deleting them.
+
+| Column | Type | Notes |
+|--------|------|-------|
+| id | INTEGER PK | autoincrement |
+| name | TEXT | required, unique |
+| color | TEXT | one of a fixed 6-color palette (`gray`/`blue`/`green`/`yellow`/`red`/`purple`), nullable |
+| created_at | TEXT | ISO datetime |
+
+**Indexes**: `tasks(status)`, `tasks(category)`, `tasks(category_id)`, `notes(type)`,
+`notes(pinned)`, `notes(category_id)`, `categories(name)` (unique).
 
 ### Full-text search (FTS5)
 
@@ -159,7 +177,9 @@ returns a merged, ranked `SearchResult[]` (a discriminated union over task/note 
 **Migrations**: schema is created with idempotent `CREATE TABLE IF NOT EXISTS` DDL run on
 every unlock, guarded by `PRAGMA user_version`. This lets a packaged app initialize any
 datasource on first open without shipping migration files. Bump `SCHEMA_VERSION` and add an
-incremental block when the schema evolves.
+incremental block when the schema evolves. Current version is **3** (v2→v3 added the
+`categories` table + `category_id` FK columns on `tasks`/`notes`, seeding Personal/Company
+and backfilling existing tasks from the legacy `category` enum).
 
 ## 5. Encryption
 
@@ -194,9 +214,11 @@ returns `IpcResult<T>` instead of throwing across the boundary.
 | datasource | `session` | → `SessionState` |
 | tasks | `list/create/update/remove/toggleStatus` | → `Task` / `Task[]` |
 | notes | `list/create/update/remove/togglePin` | → `Note` / `Note[]` |
+| categories | `list/create/update/remove` | → `Category` / `Category[]`; `remove` nulls out referencing tasks/notes |
 | search | `query` | `q` → `SearchResult[]` (bm25-ranked task+note hits w/ snippet) |
-| settings | `get` | → `AppSettings` (e.g. `autoLockMinutes`, `theme`) |
+| settings | `get` | → `AppSettings` (e.g. `autoLockMinutes`, `theme`, `ai`) |
 | settings | `update` | `Partial<AppSettings>` → `AppSettings` |
+| ai | `status/listModels/generate` | → `AiStatus` / `string[]` / `AiGenerateResult` (local Ollama only; see `src/main/ai/ollama.ts`) |
 | shell | `openExternal` | `url` → `boolean` (only `http(s):` / `slack:`) |
 
 ## 7. Startup / unlock flow

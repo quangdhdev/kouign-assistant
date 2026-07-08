@@ -28,6 +28,12 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
+import CategorySelect from '@/components/CategorySelect'
+
+// Blends the (otherwise theme-following) CategorySelect trigger into the
+// editor's always-white canvas, matching the title/body field treatment.
+const CATEGORY_TRIGGER_CLASS =
+  'h-7 w-auto min-w-[120px] text-xs bg-transparent border-neutral-200 text-neutral-900 shadow-none'
 
 // ---------------------------------------------------------------------------
 // First-line header helpers (plain notes only)
@@ -136,6 +142,10 @@ export default function NoteEditor({ note }: NoteEditorProps): React.ReactElemen
     togglePin(note.id, toast)
   }
 
+  function handleCategoryChange(categoryId: number | null): void {
+    update(note.id, { categoryId }, toast)
+  }
+
   function handleDelete(): void {
     // Cancel any pending autosave before deleting
     if (saveTimerRef.current !== null) {
@@ -168,6 +178,11 @@ export default function NoteEditor({ note }: NoteEditorProps): React.ReactElemen
               : <PinOff className="h-4 w-4 text-neutral-400" />}
           </Button>
           <span className="text-xs font-medium text-neutral-500 capitalize">{note.type}</span>
+          <CategorySelect
+            value={note.categoryId}
+            onChange={handleCategoryChange}
+            triggerClassName={CATEGORY_TRIGGER_CLASS}
+          />
         </div>
 
         {/* Right: delete with confirm */}

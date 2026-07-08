@@ -21,8 +21,11 @@ import { Plus, Pin, FileText, BookOpen, Bookmark, ChevronDown, X } from 'lucide-
 import type { NoteType, Note } from '@shared/types'
 import { useNotesStore } from '@/store/notes'
 import { useUiStore } from '@/store/ui'
+import { useCategoriesStore } from '@/store/categories'
 import { useToast } from '@/components/ToastProvider'
 import { Button } from '@/components/ui/button'
+import CategoryTag from '@/components/CategoryTag'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -31,6 +34,14 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import NoteEditor from './NoteEditor'
+
+// ---------------------------------------------------------------------------
+// Category filter (sidebar display filter) — Radix Select disallows empty
+// string item values, so "All" / "Uncategorized" use sentinel strings.
+// ---------------------------------------------------------------------------
+
+const ALL_CATEGORIES_VALUE = '__all__'
+const UNCATEGORIZED_VALUE = '__uncategorized__'
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -97,13 +108,14 @@ function NoteListItem({ note, open, active, onClick }: NoteListItemProps): React
           <p className="text-sm font-medium truncate leading-snug">
             {note.title || 'Untitled'}
           </p>
-          <div className="flex items-center gap-2 mt-0.5">
+          <div className="flex items-center gap-2 mt-0.5 flex-wrap">
             <span className={`text-xs capitalize ${active ? 'text-accent-foreground/70' : 'text-muted-foreground'}`}>
               {note.type}
             </span>
             <span className={`text-xs ${active ? 'text-accent-foreground/60' : 'text-muted-foreground'}`}>
               {note.updatedAt.split('T')[0]}
             </span>
+            <CategoryTag categoryId={note.categoryId} className={active ? 'text-accent-foreground/70' : ''} />
           </div>
         </div>
       </div>
@@ -194,10 +206,12 @@ export default function NotesPage(): React.ReactElement {
     closeTab,
     create,
   } = useNotesStore()
+  const { categories } = useCategoriesStore()
   const newNoteSeq = useUiStore((s) => s.newNoteSeq)
 
-  // Derive the active tab type from the current store filter
+  // Derive the active tab type / category from the current store filter
   const activeTabType = filter.type
+  const activeCategoryId = filter.categoryId // undefined = All, null = Uncategorized, number = a category id
 
   // Load notes on mount
   useEffect(() => {
@@ -217,12 +231,21 @@ export default function NotesPage(): React.ReactElement {
   // ---------------------------------------------------------------------------
 
   function handleTabChange(type: NoteType | undefined): void {
-    setFilter(type !== undefined ? { type } : {})
+    setFilter({ ...filter, type })
   }
 
-  const visibleNotes = activeTabType === undefined
-    ? notes
-    : notes.filter(n => n.type === activeTabType)
+  function handleCategoryFilterChange(v: string): void {
+    const categoryId = v === ALL_CATEGORIES_VALUE ? undefined : v === UNCATEGORIZED_VALUE ? null : Number(v)
+    setFilter({ ...filter, categoryId })
+  }
+
+  const visibleNotes = notes.filter(n => {
+    if (activeTabType !== undefined && n.type !== activeTabType) return false
+    if (activeCategoryId !== undefined) {
+      if (activeCategoryId === null ? n.categoryId !== null : n.categoryId !== activeCategoryId) return false
+    }
+    return true
+  })
 
   // ---------------------------------------------------------------------------
   // New note actions
@@ -311,6 +334,31 @@ export default function NotesPage(): React.ReactElement {
               {tab.label}
             </button>
           ))}
+        </div>
+
+        {/* Category filter */}
+        <div className="px-2 pb-2 flex-shrink-0">
+          <Select
+            value={
+              activeCategoryId === undefined
+                ? ALL_CATEGORIES_VALUE
+                : activeCategoryId === null
+                  ? UNCATEGORIZED_VALUE
+                  : String(activeCategoryId)
+            }
+            onValueChange={handleCategoryFilterChange}
+          >
+            <SelectTrigger className="h-7 text-xs">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value={ALL_CATEGORIES_VALUE}>All categories</SelectItem>
+              {categories.map(cat => (
+                <SelectItem key={cat.id} value={String(cat.id)}>{cat.name}</SelectItem>
+              ))}
+              <SelectItem value={UNCATEGORIZED_VALUE}>Uncategorized</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
         {/* Note list */}
