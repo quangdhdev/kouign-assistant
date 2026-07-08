@@ -27,13 +27,13 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import CategoryTag from '@/components/CategoryTag'
 import { LinkChip, useConfirmDelete } from './TodosPage'
 import {
   STATUS_LABEL,
   STATUS_BADGE_VARIANT,
   PRIORITY_BADGE_VARIANT,
   PRIORITY_LABEL,
-  CATEGORY_LABEL,
 } from './meta'
 
 const STATUS_ORDER: TaskStatus[] = ['todo', 'in_progress', 'done']
@@ -164,7 +164,7 @@ function TaskCard({ task, onEdit, onDelete, confirmDelete }: TaskCardProps): Rea
         {task.dueDate && (
           <span className="text-xs text-muted-foreground">Due {task.dueDate}</span>
         )}
-        <span className="text-xs text-muted-foreground">{CATEGORY_LABEL[task.category]}</span>
+        <CategoryTag categoryId={task.categoryId} />
         <Badge variant={PRIORITY_BADGE_VARIANT[task.priority]}>{PRIORITY_LABEL[task.priority]}</Badge>
         {task.jiraUrl && <LinkChip label="Jira" url={task.jiraUrl} />}
         {task.slackUrl && <LinkChip label="Slack" url={task.slackUrl} />}

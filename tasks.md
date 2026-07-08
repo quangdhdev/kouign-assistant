@@ -13,7 +13,7 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done
 
 <!-- Add new single tasks here, newest first. One line each; link a spec in docs/tasks/ if it needs one. -->
 
-- [ ] User-managed categories, shared by Todos & Notes — [spec](./docs/tasks/task-shared-categories.md)
+- [x] User-managed categories, shared by Todos & Notes — [spec](./docs/tasks/task-shared-categories.md)
 - [x] Tabbed Notes editor with first-line headers — [spec](./docs/tasks/task-notes-tabbed-editor.md)
 - [x] Connect to local Ollama for on-device AI — [spec](./docs/tasks/task-ollama-ai-connection.md)
 - [x] Kanban board view for Todos — [spec](./docs/tasks/task-todos-kanban-board.md)

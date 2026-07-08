@@ -18,8 +18,27 @@ export type IpcResult<T> =
 
 export type TaskStatus = 'todo' | 'in_progress' | 'done'
 export type TaskPriority = 'low' | 'medium' | 'high'
-export type TaskCategory = 'personal' | 'company'
 export type NoteType = 'note' | 'daily' | 'bookmark'
+
+// ---------------------------------------------------------------------------
+// Categories — user-managed, shared by tasks & notes (single-select each)
+// ---------------------------------------------------------------------------
+
+export type CategoryColor = 'gray' | 'blue' | 'green' | 'yellow' | 'red' | 'purple'
+
+export interface Category {
+  id: number
+  name: string
+  color: CategoryColor | null
+  createdAt: string
+}
+
+export interface CreateCategoryInput {
+  name: string
+  color?: CategoryColor | null
+}
+
+export type UpdateCategoryInput = Partial<CreateCategoryInput>
 
 // ---------------------------------------------------------------------------
 // Domain entities (Phase 1)
@@ -31,7 +50,7 @@ export interface Task {
   description: string | null
   status: TaskStatus
   priority: TaskPriority
-  category: TaskCategory
+  categoryId: number | null
   dueDate: string | null      // ISO date yyyy-mm-dd
   jiraUrl: string | null
   slackUrl: string | null
@@ -47,6 +66,7 @@ export interface Note {
   type: NoteType
   url: string | null          // bookmarks only
   pinned: boolean
+  categoryId: number | null
   createdAt: string
   updatedAt: string
 }
@@ -147,7 +167,7 @@ export interface CreateTaskInput {
   description?: string | null
   status?: TaskStatus         // default 'todo'
   priority?: TaskPriority     // default 'medium'
-  category?: TaskCategory     // default 'personal'
+  categoryId?: number | null  // default null (uncategorized)
   dueDate?: string | null
   jiraUrl?: string | null
   slackUrl?: string | null
@@ -156,7 +176,8 @@ export interface CreateTaskInput {
 export type UpdateTaskInput = Partial<CreateTaskInput>
 
 export interface TaskFilter {
-  category?: TaskCategory
+  /** undefined = no filter; null = uncategorized only; number = that category only. */
+  categoryId?: number | null
   status?: TaskStatus
 }
 
@@ -170,11 +191,16 @@ export interface CreateNoteInput {
   type?: NoteType            // default 'note'
   url?: string | null        // bookmarks
   pinned?: boolean           // default false
+  categoryId?: number | null // default null (uncategorized)
 }
 
 export type UpdateNoteInput = Partial<CreateNoteInput>
 
-export interface NoteFilter { type?: NoteType }
+export interface NoteFilter {
+  type?: NoteType
+  /** undefined = no filter; null = uncategorized only; number = that category only. */
+  categoryId?: number | null
+}
 
 // ---------------------------------------------------------------------------
 // Search (Phase 2 declaration, Phase 4.5 implementation)

@@ -1,6 +1,6 @@
 # Task: User-managed categories, shared by Todos & Notes
 
-> **Owner:** coder sub-agent (model: sonnet) · **Status:** ready
+> **Owner:** coder sub-agent (model: sonnet) · **Status:** done
 > **Depends on:** shipped MVP (tasks/notes repos, `settings` IPC). Related but distinct from the
 > backlog "Tags for tasks & notes" (tags = multi-select; categories = single-select — they can
 > coexist).
@@ -102,19 +102,19 @@ categories: {
 - No changes to FTS ranking/behavior beyond adding `category_id` to the SELECT projections.
 
 ## Acceptance criteria
-- [ ] Settings has a **Categories** manager: create, rename, recolor, and delete categories;
+- [x] Settings has a **Categories** manager: create, rename, recolor, and delete categories;
       changes persist across relaunch.
-- [ ] Existing datasources upgrade cleanly: prior tasks show **Personal**/**Company** as managed
+- [x] Existing datasources upgrade cleanly: prior tasks show **Personal**/**Company** as managed
       categories (backfilled), and both appear in the manager.
-- [ ] A task can be assigned any category or none; the Todos category filter is dynamic (incl.
+- [x] A task can be assigned any category or none; the Todos category filter is dynamic (incl.
       Uncategorized) and drives the list + kanban.
-- [ ] A note can be assigned a category (or none) in the editor; the notes sidebar can filter by
+- [x] A note can be assigned a category (or none) in the editor; the notes sidebar can filter by
       category.
-- [ ] Deleting a category leaves its tasks/notes intact but **uncategorized** (no orphaned
+- [x] Deleting a category leaves its tasks/notes intact but **uncategorized** (no orphaned
       references, no crash).
-- [ ] Creating a duplicate-named category shows a friendly error, not an unhandled rejection.
-- [ ] Global search still works and returns tasks/notes (SELECTs include `category_id`).
-- [ ] `npm run lint` / `npm run build` exit 0.
+- [x] Creating a duplicate-named category shows a friendly error, not an unhandled rejection.
+- [x] Global search still works and returns tasks/notes (SELECTs include `category_id`).
+- [x] `npm run lint` / `npm run build` exit 0.
 
 ## Verification
 ```bash

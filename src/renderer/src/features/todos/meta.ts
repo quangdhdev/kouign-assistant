@@ -1,12 +1,15 @@
 /**
- * meta.ts — label and badge-variant maps for task status / priority / category.
+ * meta.ts — label and badge-variant maps for task status / priority.
  *
  * Colors come entirely from design tokens (no hardcoded hex values).
  * Badge variants reference `src/renderer/src/components/ui/badge.tsx` which
  * maps each variant to the token-based palette in globals.css.
+ *
+ * Category is no longer a fixed enum — it's a user-managed `categoryId`
+ * (see `@/store/categories`, `@/components/CategoryTag`, `@/components/CategorySelect`).
  */
 
-import type { TaskStatus, TaskPriority, TaskCategory } from '@shared/types'
+import type { TaskStatus, TaskPriority } from '@shared/types'
 import type { BadgeProps } from '@/components/ui/badge'
 
 type BadgeVariant = NonNullable<BadgeProps['variant']>
@@ -41,13 +44,4 @@ export const PRIORITY_BADGE_VARIANT: Record<TaskPriority, BadgeVariant> = {
   low:    'neutral',
   medium: 'warning',
   high:   'danger',
-}
-
-// ---------------------------------------------------------------------------
-// Category
-// ---------------------------------------------------------------------------
-
-export const CATEGORY_LABEL: Record<TaskCategory, string> = {
-  personal: 'Personal',
-  company:  'Company',
 }

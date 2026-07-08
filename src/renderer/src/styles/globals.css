@@ -54,6 +54,14 @@
     /* --- Radius --- */
     --radius:               3px;       /* Jira-like tight radius */
     --radius-card:          8px;
+
+    /* --- Category colors (user-managed categories) --- */
+    --category-gray:        #6B778C;   /* N200 */
+    --category-blue:        #0052CC;   /* B400 */
+    --category-green:       #36B37E;   /* G400 */
+    --category-yellow:      #FFAB00;   /* Y400 */
+    --category-red:         #DE350B;   /* R400 */
+    --category-purple:      #6554C0;   /* P400 */
   }
 
   .dark {
@@ -94,6 +102,14 @@
 
     --radius:               3px;
     --radius-card:          8px;
+
+    /* --- Category colors (user-managed categories) --- */
+    --category-gray:        #8C9BAB;
+    --category-blue:        #579DFF;
+    --category-green:       #57D9A3;
+    --category-yellow:      #FFAB00;
+    --category-red:         #FF5630;
+    --category-purple:      #8F7EE7;
   }
 }
 
@@ -139,6 +155,14 @@
   --color-badge-info-text:      #0747A6;
   --color-badge-neutral-bg:     #EBECF0;
   --color-badge-neutral-text:   #172B4D;
+
+  /* Category swatches (user-managed categories) */
+  --color-category-gray:        var(--category-gray);
+  --color-category-blue:        var(--category-blue);
+  --color-category-green:       var(--category-green);
+  --color-category-yellow:      var(--category-yellow);
+  --color-category-red:         var(--category-red);
+  --color-category-purple:      var(--category-purple);
 
   --radius: var(--radius);
   --radius-card: var(--radius-card);

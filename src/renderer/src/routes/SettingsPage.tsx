@@ -9,6 +9,7 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import CategoriesSection from '@/features/categories/CategoriesSection'
 
 // ---------------------------------------------------------------------------
 // Auto-lock options
@@ -239,6 +240,9 @@ export default function SettingsPage(): React.ReactElement {
               ))}
             </div>
           </section>
+
+          {/* Categories — shared by Todos & Notes */}
+          <CategoriesSection />
 
           {/* Keyboard shortcuts */}
           <section className="mb-6">

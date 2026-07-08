@@ -13,7 +13,7 @@
  */
 
 import type Database from 'better-sqlite3-multiple-ciphers'
-import type { Task, Note, TaskStatus, TaskPriority, TaskCategory, NoteType, CreateTaskInput, UpdateTaskInput, TaskFilter, CreateNoteInput, UpdateNoteInput, NoteFilter, SearchResult } from '@shared/types'
+import type { Task, Note, TaskStatus, TaskPriority, NoteType, CreateTaskInput, UpdateTaskInput, TaskFilter, CreateNoteInput, UpdateNoteInput, NoteFilter, SearchResult, Category, CategoryColor, CreateCategoryInput, UpdateCategoryInput } from '@shared/types'
 
 // ---------------------------------------------------------------------------
 // Raw DB row shapes (snake_case, matching SQLite columns exactly)
@@ -25,7 +25,7 @@ interface RawTaskRow {
   description: string | null
   status: string
   priority: string
-  category: string
+  category_id: number | null
   due_date: string | null
   jira_url: string | null
   slack_url: string | null
@@ -41,8 +41,16 @@ interface RawNoteRow {
   type: string
   url: string | null
   pinned: number          // 0 | 1
+  category_id: number | null
   created_at: string
   updated_at: string
+}
+
+interface RawCategoryRow {
+  id: number
+  name: string
+  color: string | null
+  created_at: string
 }
 
 // ---------------------------------------------------------------------------
@@ -56,7 +64,7 @@ function mapTask(row: RawTaskRow): Task {
     description: row.description,
     status:      row.status as TaskStatus,
     priority:    row.priority as TaskPriority,
-    category:    row.category as TaskCategory,
+    categoryId:  row.category_id ?? null,
     dueDate:     row.due_date,
     jiraUrl:     row.jira_url,
     slackUrl:    row.slack_url,
@@ -68,14 +76,24 @@ function mapTask(row: RawTaskRow): Task {
 
 function mapNote(row: RawNoteRow): Note {
   return {
+    id:         row.id,
+    title:      row.title,
+    content:    row.content,
+    type:       row.type as NoteType,
+    url:        row.url,
+    pinned:     row.pinned === 1,    // INTEGER → boolean
+    categoryId: row.category_id ?? null,
+    createdAt:  row.created_at,
+    updatedAt:  row.updated_at,
+  }
+}
+
+function mapCategory(row: RawCategoryRow): Category {
+  return {
     id:        row.id,
-    title:     row.title,
-    content:   row.content,
-    type:      row.type as NoteType,
-    url:       row.url,
-    pinned:    row.pinned === 1,    // INTEGER → boolean
+    name:      row.name,
+    color:     row.color as CategoryColor | null,
     createdAt: row.created_at,
-    updatedAt: row.updated_at,
   }
 }
 
@@ -101,19 +119,24 @@ export function taskRepo(db: Database.Database) {
   return {
     /**
      * Lists all tasks, optionally filtered by status and/or category.
+     * `categoryId: null` filters to uncategorized tasks; `undefined` means no filter.
      * Ordered newest-first (created_at DESC).
      */
     list(filter?: TaskFilter): Task[] {
       const conditions: string[] = []
-      const params: string[] = []
+      const params: (string | number)[] = []
 
       if (filter?.status !== undefined) {
         conditions.push('status = ?')
         params.push(filter.status)
       }
-      if (filter?.category !== undefined) {
-        conditions.push('category = ?')
-        params.push(filter.category)
+      if (filter?.categoryId !== undefined) {
+        if (filter.categoryId === null) {
+          conditions.push('category_id IS NULL')
+        } else {
+          conditions.push('category_id = ?')
+          params.push(filter.categoryId)
+        }
       }
 
       const where = conditions.length ? ` WHERE ${conditions.join(' AND ')}` : ''
@@ -127,18 +150,18 @@ export function taskRepo(db: Database.Database) {
       const ts = now()
       const result = db.prepare(`
         INSERT INTO tasks
-          (title, description, status, priority, category,
+          (title, description, status, priority, category_id,
            due_date, jira_url, slack_url, created_at, updated_at, completed_at)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL)
       `).run(
         input.title,
         input.description ?? null,
-        input.status    ?? 'todo',
-        input.priority  ?? 'medium',
-        input.category  ?? 'personal',
-        input.dueDate   ?? null,
-        input.jiraUrl   ?? null,
-        input.slackUrl  ?? null,
+        input.status     ?? 'todo',
+        input.priority   ?? 'medium',
+        input.categoryId ?? null,
+        input.dueDate    ?? null,
+        input.jiraUrl    ?? null,
+        input.slackUrl   ?? null,
         ts,
         ts
       )
@@ -159,7 +182,7 @@ export function taskRepo(db: Database.Database) {
       if (patch.description !== undefined) { sets.push('description = ?'); params.push(patch.description ?? null) }
       if (patch.status      !== undefined) { sets.push('status = ?');      params.push(patch.status) }
       if (patch.priority    !== undefined) { sets.push('priority = ?');    params.push(patch.priority) }
-      if (patch.category    !== undefined) { sets.push('category = ?');    params.push(patch.category) }
+      if (patch.categoryId  !== undefined) { sets.push('category_id = ?'); params.push(patch.categoryId) }
       if (patch.dueDate     !== undefined) { sets.push('due_date = ?');    params.push(patch.dueDate ?? null) }
       if (patch.jiraUrl     !== undefined) { sets.push('jira_url = ?');    params.push(patch.jiraUrl ?? null) }
       if (patch.slackUrl    !== undefined) { sets.push('slack_url = ?');   params.push(patch.slackUrl ?? null) }
@@ -208,7 +231,8 @@ export function taskRepo(db: Database.Database) {
 export function noteRepo(db: Database.Database) {
   return {
     /**
-     * Lists all notes, optionally filtered by type and/or pinned status.
+     * Lists all notes, optionally filtered by type, category, and/or pinned status.
+     * `categoryId: null` filters to uncategorized notes; `undefined` means no filter.
      * Pinned notes sort first, then newest-first within each group.
      */
     list(filter?: NoteFilter): Note[] {
@@ -218,6 +242,14 @@ export function noteRepo(db: Database.Database) {
       if (filter?.type !== undefined) {
         conditions.push('type = ?')
         params.push(filter.type)
+      }
+      if (filter?.categoryId !== undefined) {
+        if (filter.categoryId === null) {
+          conditions.push('category_id IS NULL')
+        } else {
+          conditions.push('category_id = ?')
+          params.push(filter.categoryId)
+        }
       }
 
       const where = conditions.length ? ` WHERE ${conditions.join(' AND ')}` : ''
@@ -231,14 +263,15 @@ export function noteRepo(db: Database.Database) {
       const ts = now()
       const result = db.prepare(`
         INSERT INTO notes
-          (title, content, type, url, pinned, created_at, updated_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
+          (title, content, type, url, pinned, category_id, created_at, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
       `).run(
         input.title,
-        input.content ?? '',
-        input.type    ?? 'note',
-        input.url     ?? null,
-        input.pinned  ? 1 : 0,
+        input.content    ?? '',
+        input.type       ?? 'note',
+        input.url        ?? null,
+        input.pinned     ? 1 : 0,
+        input.categoryId ?? null,
         ts,
         ts
       )
@@ -255,11 +288,12 @@ export function noteRepo(db: Database.Database) {
       const sets: string[] = ['updated_at = ?']
       const params: (string | number | null)[] = [now()]
 
-      if (patch.title   !== undefined) { sets.push('title = ?');   params.push(patch.title) }
-      if (patch.content !== undefined) { sets.push('content = ?'); params.push(patch.content) }
-      if (patch.type    !== undefined) { sets.push('type = ?');    params.push(patch.type) }
-      if (patch.url     !== undefined) { sets.push('url = ?');     params.push(patch.url ?? null) }
-      if (patch.pinned  !== undefined) { sets.push('pinned = ?');  params.push(patch.pinned ? 1 : 0) }
+      if (patch.title      !== undefined) { sets.push('title = ?');       params.push(patch.title) }
+      if (patch.content    !== undefined) { sets.push('content = ?');     params.push(patch.content) }
+      if (patch.type       !== undefined) { sets.push('type = ?');        params.push(patch.type) }
+      if (patch.url        !== undefined) { sets.push('url = ?');         params.push(patch.url ?? null) }
+      if (patch.pinned     !== undefined) { sets.push('pinned = ?');      params.push(patch.pinned ? 1 : 0) }
+      if (patch.categoryId !== undefined) { sets.push('category_id = ?'); params.push(patch.categoryId) }
 
       params.push(id)
       db.prepare(`UPDATE notes SET ${sets.join(', ')} WHERE id = ?`).run(...params)
@@ -288,6 +322,80 @@ export function noteRepo(db: Database.Database) {
       return mapNote(
         db.prepare('SELECT * FROM notes WHERE id = ?').get(id) as RawNoteRow
       )
+    },
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Category repository — user-managed, shared by tasks & notes
+// ---------------------------------------------------------------------------
+// CreateCategoryInput / UpdateCategoryInput are defined in @shared/types and
+// imported above — no local re-declaration needed.
+
+/** True when the SQLite error is a UNIQUE constraint violation (duplicate name). */
+function isUniqueConstraintError(err: unknown): boolean {
+  return err instanceof Error && /UNIQUE constraint failed/.test(err.message)
+}
+
+export function categoryRepo(db: Database.Database) {
+  return {
+    /** Lists all categories, ordered by name ascending. */
+    list(): Category[] {
+      const rows = db.prepare('SELECT * FROM categories ORDER BY name ASC').all() as RawCategoryRow[]
+      return rows.map(mapCategory)
+    },
+
+    /** Inserts a new category and returns the persisted domain object. */
+    create(input: CreateCategoryInput): Category {
+      const ts = now()
+      let result
+      try {
+        result = db.prepare(
+          'INSERT INTO categories (name, color, created_at) VALUES (?, ?, ?)'
+        ).run(input.name, input.color ?? null, ts)
+      } catch (err) {
+        if (isUniqueConstraintError(err)) {
+          throw new Error(`A category named '${input.name}' already exists.`)
+        }
+        throw err
+      }
+      return mapCategory(
+        db.prepare('SELECT * FROM categories WHERE id = ?').get(result.lastInsertRowid) as RawCategoryRow
+      )
+    },
+
+    /** Applies a partial patch (rename / recolor) and returns the updated domain object. */
+    update(id: number, patch: UpdateCategoryInput): Category {
+      const sets: string[] = []
+      const params: (string | null)[] = []
+
+      if (patch.name  !== undefined) { sets.push('name = ?');  params.push(patch.name) }
+      if (patch.color !== undefined) { sets.push('color = ?'); params.push(patch.color ?? null) }
+
+      if (sets.length > 0) {
+        try {
+          db.prepare(`UPDATE categories SET ${sets.join(', ')} WHERE id = ?`).run(...params, id)
+        } catch (err) {
+          if (isUniqueConstraintError(err)) {
+            throw new Error(`A category named '${patch.name}' already exists.`)
+          }
+          throw err
+        }
+      }
+
+      return mapCategory(
+        db.prepare('SELECT * FROM categories WHERE id = ?').get(id) as RawCategoryRow
+      )
+    },
+
+    /**
+     * Deletes a category. Tasks/notes referencing it are nulled out first
+     * (become uncategorized) so no orphaned category_id remains.
+     */
+    remove(id: number): void {
+      db.prepare('UPDATE tasks SET category_id = NULL WHERE category_id = ?').run(id)
+      db.prepare('UPDATE notes SET category_id = NULL WHERE category_id = ?').run(id)
+      db.prepare('DELETE FROM categories WHERE id = ?').run(id)
     },
   }
 }
@@ -344,7 +452,7 @@ export function searchRepo(db: Database.Database) {
       // --- tasks ---
       const taskRows = db.prepare(`
         SELECT
-          t.id, t.title, t.description, t.status, t.priority, t.category,
+          t.id, t.title, t.description, t.status, t.priority, t.category_id,
           t.due_date, t.jira_url, t.slack_url, t.created_at, t.updated_at, t.completed_at,
           snippet(tasks_fts, -1, '<mark>', '</mark>', '…', ${SNIPPET_TOKENS}) AS snippet,
           bm25(tasks_fts) AS rank
@@ -358,7 +466,7 @@ export function searchRepo(db: Database.Database) {
       // --- notes ---
       const noteRows = db.prepare(`
         SELECT
-          n.id, n.title, n.content, n.type, n.url, n.pinned, n.created_at, n.updated_at,
+          n.id, n.title, n.content, n.type, n.url, n.pinned, n.category_id, n.created_at, n.updated_at,
           snippet(notes_fts, -1, '<mark>', '</mark>', '…', ${SNIPPET_TOKENS}) AS snippet,
           bm25(notes_fts) AS rank
         FROM notes_fts

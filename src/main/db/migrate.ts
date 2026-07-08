@@ -12,7 +12,7 @@
 import type Database from 'better-sqlite3-multiple-ciphers'
 
 /** Increment this constant whenever the schema changes. */
-export const SCHEMA_VERSION = 2
+export const SCHEMA_VERSION = 3
 
 /**
  * Bootstraps (or verifies) the database schema.
@@ -121,6 +121,56 @@ export function migrate(db: Database.Database): void {
         SELECT id, title, description FROM tasks;
       INSERT INTO notes_fts(rowid, title, content)
         SELECT id, title, content FROM notes;
+    `)
+  }
+
+  // -------------------------------------------------------------------------
+  // Version 3 — user-managed categories, shared by tasks & notes
+  //
+  // A single `categories` table replaces the fixed personal/company enum.
+  // `tasks.category_id` / `notes.category_id` are nullable FKs (no category =
+  // uncategorized). The legacy `tasks.category` TEXT column is left in place
+  // (NOT NULL DEFAULT 'personal') but is no longer read or written — dropping
+  // it would require a risky table rebuild in SQLite.
+  //
+  // On a v2 → v3 upgrade we seed Personal/Company (matching the old fixed
+  // categories) and backfill tasks.category_id from the legacy enum column,
+  // so existing tasks keep their category. Notes had no prior category
+  // concept, so they start uncategorized (category_id NULL).
+  // -------------------------------------------------------------------------
+
+  if (currentVersion < 3) {
+    db.exec(`
+      CREATE TABLE IF NOT EXISTS categories (
+        id         INTEGER PRIMARY KEY AUTOINCREMENT,
+        name       TEXT    NOT NULL,
+        color      TEXT,
+        created_at TEXT    NOT NULL
+      );
+      CREATE UNIQUE INDEX IF NOT EXISTS idx_categories_name ON categories(name);
+
+      ALTER TABLE tasks ADD COLUMN category_id INTEGER;
+      ALTER TABLE notes ADD COLUMN category_id INTEGER;
+
+      CREATE INDEX IF NOT EXISTS idx_tasks_category_id ON tasks(category_id);
+      CREATE INDEX IF NOT EXISTS idx_notes_category_id ON notes(category_id);
+    `)
+
+    // Seed the fixed legacy categories as managed ones — guarded so this is
+    // safe even if migrate() were somehow invoked twice.
+    const { n: existingCount } = db.prepare('SELECT COUNT(*) AS n FROM categories').get() as { n: number }
+    if (existingCount === 0) {
+      const ts = new Date().toISOString()
+      db.prepare('INSERT INTO categories (name, color, created_at) VALUES (?, ?, ?)').run('Personal', 'blue', ts)
+      db.prepare('INSERT INTO categories (name, color, created_at) VALUES (?, ?, ?)').run('Company', 'green', ts)
+    }
+
+    // Backfill existing tasks' category_id from the legacy enum column.
+    db.exec(`
+      UPDATE tasks SET category_id = (SELECT id FROM categories WHERE name = 'Personal')
+        WHERE category = 'personal';
+      UPDATE tasks SET category_id = (SELECT id FROM categories WHERE name = 'Company')
+        WHERE category = 'company';
     `)
   }
 
