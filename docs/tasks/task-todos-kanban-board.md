@@ -1,6 +1,6 @@
 # Task: Kanban board view for Todos
 
-> **Owner:** coder sub-agent (model: sonnet) · **Status:** ready
+> **Owner:** coder sub-agent (model: sonnet) · **Status:** done
 > **Depends on:** nothing — builds on shipped MVP (Phase 3 Todos: `useTasksStore`, `window.api.tasks.*`, `meta.ts`)
 > **Read first:** [ARCHITECTURE.md](../../ARCHITECTURE.md) — Todos data model & `tasks` IPC;
 > [DESIGN_SYSTEM.md](../../DESIGN_SYSTEM.md) §2 (status colors), §4 (spacing/cards), §6 (view patterns)
@@ -65,18 +65,18 @@ restarts.
 - No keyboard drag-and-drop (the "Set status" menu is the a11y path).
 
 ## Acceptance criteria
-- [ ] The Todos header has a List/Board toggle; switching updates the view and persists across
+- [x] The Todos header has a List/Board toggle; switching updates the view and persists across
       an app restart (defaults to List on first run).
-- [ ] Board view shows three columns (To Do / In Progress / Done) with each task in the column
+- [x] Board view shows three columns (To Do / In Progress / Done) with each task in the column
       matching its status, plus a per-column count.
-- [ ] Dragging a card to a different column changes its status and persists — after quit &
+- [x] Dragging a card to a different column changes its status and persists — after quit &
       relaunch the task is still in the new column.
-- [ ] The Category filter still applies in Board view; Status pills are hidden there.
-- [ ] Creating a task (button or ⌘N) and the search palette's jump-to-edit both work while
+- [x] The Category filter still applies in Board view; Status pills are hidden there.
+- [x] Creating a task (button or ⌘N) and the search palette's jump-to-edit both work while
       Board view is active.
-- [ ] Each card supports Edit / Set status → / Delete-with-confirm and opens Jira/Slack links
+- [x] Each card supports Edit / Set status → / Delete-with-confirm and opens Jira/Slack links
       externally — matching the list row.
-- [ ] `npm run lint` / `npm run build` exit 0.
+- [x] `npm run lint` / `npm run build` exit 0.
 
 ## Verification
 ```bash
