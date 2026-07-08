@@ -1,6 +1,6 @@
 # Task: Collapsible icon-only left navigation
 
-> **Owner:** coder sub-agent (model: sonnet) · **Status:** ready
+> **Owner:** coder sub-agent (model: sonnet) · **Status:** done
 > **Depends on:** nothing — builds on shipped MVP (`AppShell.tsx`, existing sidebar tokens)
 > **Read first:** [DESIGN_SYSTEM.md](../../DESIGN_SYSTEM.md) §6 (Layout & shell), §7 (Iconography)
 
@@ -54,17 +54,17 @@ Give each nav entry an icon:
   for this.
 
 ## Acceptance criteria
-- [ ] Sidebar shows an icon **and** text label for Todos / Notes / Settings when expanded.
-- [ ] Clicking the toggle collapses the sidebar to an icon-only rail (~56px) and back; width
+- [x] Sidebar shows an icon **and** text label for Todos / Notes / Settings when expanded.
+- [x] Clicking the toggle collapses the sidebar to an icon-only rail (~56px) and back; width
       animates smoothly.
-- [ ] In both states, the icon of the **current route** is highlighted with the accent
+- [x] In both states, the icon of the **current route** is highlighted with the accent
       background; navigating updates the highlight.
-- [ ] When collapsed, hovering an icon shows the route name (native `title`), and each
+- [x] When collapsed, hovering an icon shows the route name (native `title`), and each
       icon-only link has an accessible name (`sr-only` / `aria-label`).
-- [ ] Collapse state **survives an app restart** (persisted to `localStorage`, no flash of the
+- [x] Collapse state **survives an app restart** (persisted to `localStorage`, no flash of the
       wrong state on load).
-- [ ] Keyboard focus ring is visible on nav items and the toggle in both states.
-- [ ] `npm run lint` / `npm run build` exit 0.
+- [x] Keyboard focus ring is visible on nav items and the toggle in both states.
+- [x] `npm run lint` / `npm run build` exit 0.
 
 ## Verification
 ```bash
